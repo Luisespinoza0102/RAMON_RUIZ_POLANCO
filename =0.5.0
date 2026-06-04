@@ -1,2 +1,0 @@
-Requirement already satisfied: python-bidi in .\venv\Lib\site-packages (0.4.2)
-Requirement already satisfied: six in .\venv\Lib\site-packages (from python-bidi) (1.17.0)
