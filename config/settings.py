@@ -1,16 +1,19 @@
 import os
 from pathlib import Path
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
-
-SECRET_KEY = 'django-insecure-t!=zabhytvk5zc#ps*8wp06!qgw(d%lh7eu!n!&2d5^4mjsn9f'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-for-local-dev')
 
 
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost,0.0.0.0').split(',')
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
 # Application definition
@@ -51,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -78,10 +82,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ramon_ruiz_polanco',
-        'USER': 'Espinoza',
-        'PASSWORD': 'luisjose1234',
-        'PORT': '3306',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT', '3306'),
         'OPTIONS': {
             'init_command': (
                 "SET sql_mode='STRICT_TRANS_TABLES';"
@@ -135,19 +140,18 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dispatch_dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
+
+if not DEBUG:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Configuracion de EMAIL
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_USE_TLS = True
-
-# Tu dirección de correo completa de Gmail
-EMAIL_HOST_USER = 'bibliotecarrpv2.0@gmail.com'
-
-# Los 16 caracteres generados (sin espacios intermedios)
-EMAIL_HOST_PASSWORD = 'trnfyaapxuklilja' 
-
-# Dirección por defecto que verán los usuarios al recibir el correo
-DEFAULT_FROM_EMAIL = 'Biblioteca Pública Ramón Ruiz Polanco <bibliotecarrpv2.0@gmail.com>'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = f'Biblioteca Pública Ramón Ruiz Polanco <{os.getenv("EMAIL_HOST_USER")}>'
