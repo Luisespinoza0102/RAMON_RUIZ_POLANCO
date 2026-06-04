@@ -1,0 +1,42 @@
+<header class="w-full h-16 bg-white shadow-sm flex items-center justify-between px-6 z-40">
+    <div class="flex items-center">
+        <h2 class="text-xl font-semibold text-gray-700">
+            {% block header_title %}Biblioteca Pública Ramón Ruíz Polanco{% endblock %}
+        </h2>
+    </div>
+
+    <div class="flex items-center gap-4">
+        {% if user.is_authenticated %}
+          <div class="relative">
+            <button onclick="toggleDropdown('userMenu')" class=" items-center gap-3 focus:outline-none">
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-bold text-gray-700">{{ user.get_full_name|default:user.username }}</p>
+                    <p class="text-xs text-gray-500">{{ user.perfil.get_rol_display }}</p>
+                </div>
+                {% if user.perfil.foto_perfil %}
+                  <img src="{{ user.perfil.foto_perfil.url }}" class="h-10 w-10 rounded-full object-cover border-2 border-primary">
+                {% else %}
+                  <div class="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+                    {{ user.username|slice:":1"|upper }}
+                  </div>
+                {% endif %}
+                <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+            </button>
+
+            <div class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 hidden border border-gray-100" id="userMenu">
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mi Perfil</a>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Configuración</a>
+                <div class="border-t border-gray-100 my-1"></div>
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-semibold">
+                        Cerrar Sesión
+                    </button>
+                </form>
+            </div>
+          </div>
+        {% else %}
+         <a href="{% url 'login' %}" class="text-primary font-bold hover:underline">Iniciar Sesión</a>
+        {% endif %}
+    </div>
+</header>

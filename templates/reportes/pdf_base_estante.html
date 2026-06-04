@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Inventario por Estante - {{ estante }}</title>
+    <style>
+        @page {
+            size: letter landscape;
+            margin: 1.5cm 1.5cm 2cm 1.5cm;
+            @frame footer_frame {
+                -pdf-frame-content: footerContent;
+                bottom: 0.5cm;
+                margin-left: 1.5cm;
+                margin-right: 1.5cm;
+                height: 1cm;
+            }
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #333333;
+            font-size: 10pt;
+        }
+
+        /* --- ENCABEZADO OFICIAL --- */
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #003366;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .header-text {
+            text-align: center;
+            font-size: 9pt;
+            font-weight: bold;
+            color: #000000;
+            line-height: 1.2;
+        }
+        .institution-name {
+            font-size: 11pt;
+            color: #003366;
+            margin-top: 3px;
+        }
+
+        /* --- METADATOS DEL REPORTE --- */
+        .meta-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .meta-title {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #003366;
+            text-transform: uppercase;
+        }
+        .meta-info {
+            text-align: right;
+            font-size: 8.5pt;
+            color: #555555;
+            line-height: 1.4;
+        }
+
+        /* --- DASHBOARD / KPIs --- */
+        .summary-container {
+            width: 100%;
+            margin-bottom: 25px;
+        }
+        .kpi-box {
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            text-align: center;
+        }
+        .kpi-value {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #0f172a;
+            display: block;
+        }
+        .kpi-label {
+            font-size: 7.5pt;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        /* --- TABLAS DE DATOS --- */
+        .section-title {
+            color: #003366;
+            font-size: 11pt;
+            font-weight: bold;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 3px;
+            margin-bottom: 10px;
+            margin-top: 15px;
+        }
+
+        .data-table, .resumen-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .resumen-table {
+            width: 50%; /* Más pequeña porque tiene pocos datos */
+            margin-bottom: 20px;
+        }
+
+        .data-table th, .resumen-table th {
+            background-color: #003366;
+            color: #ffffff;
+            padding: 6px;
+            font-size: 8.5pt;
+            text-align: left;
+            border: 1px solid #003366;
+        }
+        .data-table td, .resumen-table td {
+            padding: 6px;
+            font-size: 8pt;
+            border: 1px solid #cbd5e1;
+            vertical-align: middle;
+        }
+        /* Color intercalado para las filas */
+        .data-table tr:nth-child(even) td {
+            background-color: #f1f5f9;
+        }
+
+        .tag-estado {
+            font-size: 7pt;
+            font-weight: bold;
+            color: #334155;
+            background-color: #e2e8f0;
+            padding: 2px 4px;
+        }
+
+        /* --- FOOTER --- */
+        .footer {
+            text-align: center;
+            font-size: 7.5pt;
+            color: #64748b;
+            border-top: 1px solid #cbd5e1;
+            padding-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <table class="header-table">
+        <tr>
+            <td width="15%" align="left" valign="middle">
+                {% if logo_izq_64 %}
+                    <img src="data:image/png;base64,{{ logo_izq_64 }}" height="55">
+                {% else %}
+                    <div style="height: 55px; width: 55px;"></div>
+                {% endif %}
+            </td>
+            
+            <td width="70%" class="header-text" valign="middle">
+                REPÚBLICA BOLIVARIANA DE VENEZUELA<br>
+                GOBERNACIÓN DEL ESTADO FALCÓN<br>
+                COORDINACIÓN DE RED DE BIBLIOTECAS PÚBLICAS<br>
+                <div class="institution-name">BIBLIOTECA PÚBLICA "RAMÓN RUIZ POLANCO"</div>
+            </td>
+
+            <td width="15%" align="right" valign="middle">
+                {% if logo_der_64 %}
+                    <img src="data:image/png;base64,{{ logo_der_64 }}" height="55">
+                {% else %}
+                    <div style="height: 55px; width: 55px;"></div>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+
+    <table class="meta-table">
+        <tr>
+            <td width="55%" valign="bottom">
+                <div class="meta-title">INVENTARIO DE EXISTENCIAS</div>
+                <div style="font-size: 11pt; color: #333; margin-top: 4px;">
+                    <strong>Ubicación / Estante:</strong> {{ estante|upper }}
+                </div>
+            </td>
+            <td width="45%" class="meta-info" valign="bottom">
+                <strong>Generado por:</strong> {{ admin_nombre|upper }}<br>
+                <strong>Fecha:</strong> {{ fecha|date:"d/m/Y" }} &nbsp;|&nbsp; <strong>Hora:</strong> {{ fecha|date:"h:i A" }}
+            </td>
+        </tr>
+    </table>
+
+    <table class="summary-container" cellpadding="0" cellspacing="0">
+        <tr>
+            <td width="30%" class="kpi-box">
+                <span class="kpi-value">{{ total_libros }}</span>
+                <span class="kpi-label">Títulos Únicos</span>
+            </td>
+            <td width="5%"></td> <td width="30%" class="kpi-box">
+                <span class="kpi-value">{{ total_ejemplares }}</span>
+                <span class="kpi-label">Total de Ejemplares</span>
+            </td>
+            <td width="35%"></td> </tr>
+    </table>
+
+    <div class="section-title">RESUMEN POR CATEGORÍA (CUTTER)</div>
+    <table class="resumen-table">
+        <thead>
+            <tr>
+                <th width="70%">Clasificación Cutter</th>
+                <th width="30%" style="text-align: center;">Cantidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in resumen %}
+            <tr>
+                <td><strong>{{ r.libro__cutter }}</strong></td>
+                <td align="center">{{ r.total }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="2" align="center">No hay categorías registradas</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">DESGLOSE FÍSICO DE EJEMPLARES</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th width="5%">#</th>
+                <th width="20%">Código Inventario</th>
+                <th width="45%">Título de la Obra</th>
+                <th width="15%" style="text-align: center;">Cutter</th>
+                <th width="15%" style="text-align: center;">Estado Físico</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in detallada %}
+            <tr>
+                <td align="center">{{ forloop.counter }}</td>
+                <td style="font-family: monospace; font-size: 8.5pt;">{{ d.codigo_inventario }}</td>
+                <td><strong>{{ d.libro.titulo }}</strong></td>
+                <td align="center">{{ d.libro.cutter }}</td>
+                <td align="center">
+                    <span class="tag-estado">{{ d.estado }}</span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" align="center">No hay ejemplares registrados en este estante.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="footerContent" class="footer">
+        Documento generado automáticamente por el Sistema de Gestión Bibliotecaria "RRP" - 
+        Página <pdf:pagenumber> de <pdf:pagecount>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto p-4">
+    <div class="bg-slate-800 rounded-3xl overflow-hidden border border-slate-700 shadow-2xl flex flex-col md:flex-row">
+        
+        <div class="md:w-1/3 bg-slate-900 p-8 flex items-center justify-center border-r border-slate-700">
+            {% if libro.imagen_portada %}
+                <img src="{{ libro.imagen_portada.url }}" alt="{{ libro.titulo }}" class="rounded-xl shadow-lg w-full object-cover">
+            {% else %}
+                <div class="text-center text-slate-600">
+                    <i class="fas fa-book text-9xl mb-4"></i>
+                    <p>Sin portada disponible</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="md:w-2/3 p-8">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h1 class="text-4xl font-extrabold text-white uppercase tracking-tight">{{ libro.titulo }}</h1>
+                    <p class="text-blue-400 font-medium text-lg">
+                        {% for autor in libro.autores.all %}{{ autor.nombre_completo }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                    </p>
+                </div>
+                <span class="bg-slate-700 text-slate-300 px-4 py-1 rounded-full text-sm font-bold">
+                    Cutter: {{ libro.cutter }}
+                </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6 my-6 p-4 bg-slate-900/50 rounded-2xl border border-slate-700">
+                <div>
+                    <p class="text-slate-500 text-xs uppercase font-bold">Géneros</p>
+                    <p class="text-white">{% for g in libro.generos.all %}{{ g.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                </div>
+                <div>
+                    <p class="text-slate-500 text-xs uppercase font-bold">Disponibilidad Total</p>
+                    <p class="text-2xl font-bold {% if disponibles > 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                        {{ disponibles }} unidades
+                    </p>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="text-slate-400 text-sm font-bold uppercase mb-2">Sinopsis</h3>
+                <p class="text-slate-300 leading-relaxed">{{ libro.descripcion }}</p>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="text-white font-bold mb-3">Ubicación de Copias Físicas</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="text-slate-500 uppercase text-xs border-b border-slate-700">
+                            <tr>
+                                <th class="pb-2">Editorial / Año</th>
+                                <th class="pb-2">Estante</th>
+                                <th class="pb-2 text-center">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700">
+                            {% for ej in ejemplares %}
+                            <tr>
+                                <td class="py-3">{{ ej.editorial.nombre }} ({{ ej.anio_publicacion }})</td>
+                                <td class="py-3">
+                                    <span class="text-xs text-slate-500">{{ ej.ubicacion.estante }}</span>
+                                </td>
+                                <td class="py-3 text-center">
+                                    <span class="px-2 py-1 rounded-md text-[10px] font-bold 
+                                        {% if ej.estado == 'DISPONIBLE' %}bg-green-500/10 text-green-500
+                                        {% elif ej.estado == 'PRESTADO' %}bg-yellow-500/10 text-yellow-500
+                                        {% elif ej.estado == 'DONADO' %}bg-orange-500/10 text-orange-500
+                                        {% else %}bg-red-500/10 text-red-500{% endif %}">
+
+                                        {% if ej.estado == 'DONADO' %}
+                                           <i class="fas fa-gift mr-1"></i>FUERA DE STOCK (DONADO)
+                                        {% else %}
+                                          {{ ej.estado }}
+                                        {% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="py-4 text-center text-slate-500">No hay ejemplares registrados.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-slate-700">
+                {% if prestamos_vencidos %}
+                    <div class="bg-red-500/10 border border-red-500/50 p-4 rounded-xl flex items-center gap-3 mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-500"></i>
+                        <p class="text-red-200 text-sm">Tienes libros vencidos. Debes devolverlos antes de solicitar nuevos.</p>
+                    </div>
+                {% endif %}
+
+                {% if libro.es_infantil or libro.es_bolivariano %}
+                    <div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl flex flex-col gap-2 mb-4">
+                        <div class="flex items-center gap-3 text-amber-400 font-bold text-sm">
+                            <i class="fas fa-exclamation-circle text-base"></i>
+                            <span>MATERIAL EXCLUSIVO DE SALA</span>
+                        </div>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Este libro está clasificado como material de la
+                            {% if libro.es_infantil %}<strong class="text-pink-400">Colección Infantil</strong>{% endif %}
+                            {% if libro.es_infantil and libro.es_bolivariano %} y {% endif %}
+                            {% if libro.es_bolivariano %}<strong class="text-yellow-400">Colección Estadal</strong>{% endif %}.
+                            Para resguardar el patrimonio, los préstamos circulantes a domicilio están deshabilitados. <strong>Solo lectura dentro de las instalaciones de la biblioteca.</strong>
+                        </p>
+                    </div>
+                    <button disabled class="w-full bg-slate-800/80 text-amber-500/60 border border-slate-700/60 font-bold py-4 rounded-xl cursor-not-allowed flex items-center justify-center gap-2">
+                        <i class="fas fa-book-reader text-sm"></i>
+                        SOLO DISPONIBLE PARA CONSULTA INTERNA
+                    </button>
+                
+                {% else %}
+                    {% if puedo_solicitar %}
+                        <form action="{% url 'solicitar_prestamo' libro.id %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-900/40 flex items-center justify-center gap-2">
+                                <i class="fas fa-hand-holding-medical"></i>
+                                SOLICITAR PRÉSTAMO AHORA
+                            </button>
+                        </form>
+                    {% else %}
+                        <button disabled class="w-full bg-slate-700 text-slate-500 font-bold py-4 rounded-xl cursor-not-allowed">
+                            {% if disponibles == 0 %}AGOTADO TEMPORALMENTE{% else %}PRÉSTAMO NO DISPONIBLE{% endif %}
+                        </button>
+                    {% endif %}
+                {% endif %} </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

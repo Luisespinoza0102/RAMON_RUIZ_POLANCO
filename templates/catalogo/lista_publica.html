@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title_page %}Catálogo de Libros{% endblock %}
+
+{% block content %}
+<div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+    <form method="get" class="flex gap-4">
+        <div class="flex-grow relative">
+            <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+            <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Buscar por título, autor o categoría..." 
+                   class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+        <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 shadow-lg">
+            Buscar
+        </button>
+    </form>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% for libro in libros %}
+    <div class="bg-white rounded-xl shadow hover:shadow-2xl transition duration-300 overflow-hidden flex flex-col h-full">
+        <div class="h-56 bg-gray-100 relative">
+            {% if libro.imagen_portada %}
+                <img src="{{ libro.imagen_portada.url }}" class="w-full h-full object-cover">
+            {% else %}
+                <div class="flex items-center justify-center h-full text-gray-300">
+                    <i class="fas fa-book fa-4x"></i>
+                </div>
+            {% endif %}
+            <div class="absolute top-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold">
+                {{ libro.anio }}
+            </div>
+        </div>
+
+        <div class="p-5 flex-grow flex flex-col">
+            <div class="mb-4 flex-grow">
+                <h3 class="text-lg font-bold text-gray-800 leading-tight mb-1">{{ libro.titulo }}</h3>
+                <p class="text-sm text-gray-500">{{ libro.autor }}</p>
+                <div class="mt-2">
+                    <span class="inline-block bg-gray-100 rounded-full px-2 py-1 text-xs font-semibold text-gray-600">
+                        {{ libro.categoria }}
+                    </span>
+                </div>
+            </div>
+            
+            <a href="{% url 'detalle_libro' libro.id %}" class="w-full block text-center bg-blue-600 text-white font-medium py-2 rounded hover:bg-blue-700 transition">
+                Ver Detalles
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-full text-center py-12">
+        <div class="inline-block p-4 rounded-full bg-gray-100 mb-4">
+            <i class="fas fa-search text-gray-400 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900">No encontramos libros</h3>
+        <p class="text-gray-500">Intenta con otros términos de búsqueda.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

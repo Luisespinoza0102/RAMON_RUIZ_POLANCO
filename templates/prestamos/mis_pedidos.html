@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title_page %}Historial de Préstamos{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-800">
+                    Mis Solicitudes
+                </span>
+            </h1>
+            <p class="text-slate-500 font-medium mt-1">Historial completo de tus movimientos en la biblioteca.</p>
+        </div>
+        <a href="{% url 'dashboard_usuario' %}" class="text-slate-500 hover:text-blue-600 font-bold text-sm flex items-center gap-2 transition">
+            <i class="fas fa-arrow-left"></i> Volver al Inicio
+        </a>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/60 overflow-hidden border border-gray-100">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white">
+                    <tr>
+                        <th class="p-5 text-xs font-bold uppercase tracking-wider text-blue-100">Libro / Ejemplar</th>
+                        <th class="p-5 text-xs font-bold uppercase tracking-wider text-blue-100">Fecha Solicitud</th>
+                        <th class="p-5 text-xs font-bold uppercase tracking-wider text-blue-100 text-center">Estado Actual</th>
+                        <th class="p-5 text-xs font-bold uppercase tracking-wider text-blue-100 text-right">Devolución / Límite</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for prestamo in prestamos %}
+                    <tr class="hover:bg-slate-50 transition duration-150 group">
+                        
+                        <td class="p-5">
+                            <div class="flex items-center gap-4">
+                                <div class="h-10 w-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold shadow-sm group-hover:bg-blue-600 group-hover:text-white transition">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-slate-800 text-sm group-hover:text-blue-700 transition">
+                                        {{ prestamo.ejemplar.libro.titulo }}
+                                    </div>
+                                    <div class="text-[10px] text-slate-400 font-mono mt-0.5">
+                                        {{ prestamo.ejemplar.codigo_inventario }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="p-5">
+                            <span class="text-sm font-medium text-slate-600">
+                                {{ prestamo.fecha_solicitud|date:"d M, Y" }}
+                            </span>
+                        </td>
+
+                        <td class="p-5 text-center">
+                            {% if prestamo.estado == 'APROBADO' %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-sm">
+                                    <i class="fas fa-check-circle mr-2"></i> Aprobado
+                                </span>
+                                {% if not prestamo.es_renovado %}
+                                <a href="{% url 'solicitar_renovacion' prestamo.id %}" class="inline-flex items-center px-2 py-1 text-[11px] font-bold text-blue-600 bg-blue-50 border border-blue-200 rounded hover:bg-blue-600 hover:text-white transition duration-200" onclick="return confirm('¿Deseas solicitar la renovación de este libro?');">
+                                    <i class="fas fa-sync-alt mr-1"></i> Solicitar Renovación
+                                </a>
+                                {% else %}
+                                  <span class="text-[10px] text-gray-400 font-medium italic">Ya Renovado</span>
+                                {% endif %}
+                            {% elif prestamo.estado == 'RENOVACION_SOLICITADA' %}
+                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 border border-purple-200 shadow-sm animate-pulse">
+                                <i class="fas fa-hourglass-half mr-2"></i> Renovación Pendiente
+                             </span>
+                            {% elif prestamo.estado == 'SOLICITADO' %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200 shadow-sm">
+                                    <i class="fas fa-clock mr-2"></i> Pendiente
+                                </span>
+                            {% elif prestamo.estado == 'RECHAZADO' %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200 shadow-sm">
+                                    <i class="fas fa-times-circle mr-2"></i> Rechazado
+                                </span>
+                            {% elif prestamo.estado == 'DEVUELTO' %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 shadow-sm">
+                                    <i class="fas fa-archive mr-2"></i> Devuelto
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="p-5 text-right">
+                            {% if prestamo.fecha_devolucion_esperada %}
+                                <div class="font-bold text-sm text-slate-700">
+                                    {{ prestamo.fecha_devolucion_esperada|date:"d/m/Y" }}
+                                </div>
+                                {% if prestamo.estado == 'APROBADO' and prestamo.esta_vencido %}
+                                    <span class="text-[10px] text-red-500 font-black uppercase tracking-wide">Vencido</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-slate-400 text-xs italic">--/--/----</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="p-12 text-center bg-slate-50/50">
+                            <div class="flex flex-col items-center justify-center">
+                                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-300 mb-4">
+                                    <i class="fas fa-folder-open text-3xl"></i>
+                                </div>
+                                <h3 class="text-slate-700 font-bold text-lg mb-1">Aún no hay historial</h3>
+                                <p class="text-slate-500 text-sm mb-6">Tus solicitudes de préstamo aparecerán aquí.</p>
+                                <a href="{% url 'catalogo_publico' %}" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold shadow-md transition">
+                                    Explorar Catálogo
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

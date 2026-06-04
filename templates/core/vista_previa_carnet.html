@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-slate-100">Previsualización de Carnet</h2>
+        <div class="space-x-2">
+            <a href="{% url 'gestion_usuarios' %}" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition">
+                <i class="fas fa-arrow-left mr-2"></i> Volver
+            </a>
+            <a href="{% url 'enviar_carnet_usuario' perfil.id %}" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg transition font-semibold">
+                <i class="fas fa-paper-plane mr-2"></i> Enviar al Usuario
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-slate-800 p-8 rounded-xl border border-slate-700 flex flex-col items-center">
+        <p class="text-slate-400 mb-4 text-sm"><i class="fas fa-info-circle mr-2"></i> Así se verá el carnet impreso (Anverso y Reverso)</p>
+        
+        <div class="bg-white shadow-2xl rounded-sm overflow-hidden text-black" style="width: 350px; border: 1px solid #000;">
+            <!-- FRENTE -->
+            <table class="w-full border-collapse" style="border: 1px solid black;">
+                <tr>
+                    <td colspan="2" class="p-2 text-center bg-gray-100 font-bold border border-black" style="font-size: 14px;">
+                        Biblioteca Pública<br>"Ramón Ruiz Polanco"
+                    </td>
+                    <td rowspan="3" class="w-32 h-32 border border-black text-center p-1">
+                        {% if perfil.foto_perfil %}
+                            <img src="{{ perfil.foto_perfil.url }}" class="w-full h-full object-cover border border-gray-300">
+                        {% else %}
+                            <div class="w-full h-full bg-gray-200 flex items-center justify-center text-[10px] text-gray-500">SIN FOTO</div>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="p-1 border border-black text-[10px]">Apellidos:</td>
+                    <td class="p-1 border border-black font-bold uppercase text-xs">{{ perfil.usuario.last_name }}</td>
+                </tr>
+                <tr>
+                    <td class="p-1 border border-black text-[10px]">Nombres:</td>
+                    <td class="p-1 border border-black font-bold uppercase text-xs">{{ perfil.usuario.first_name }}</td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="px-2 pt-1 text-[10px] border-l border-black">Nº de Carnet:</td>
+                    <td class="text-center text-[10px] border-l border-r border-black">Cédula de Identidad</td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="px-2 pb-1 font-bold text-lg border-l border-b border-black">{{ perfil.carnet }}</td>
+                    <td class="text-center font-bold border-l border-r border-b border-black">{{ perfil.cedula }}</td>
+                </tr>
+            </table>
+
+            <!-- SEPARADOR DE DOBLEZ -->
+            <div class="bg-gray-300 h-4 flex items-center justify-center text-[8px] uppercase tracking-widest text-gray-600">Línea de Doblez</div>
+
+            <!-- REVERSO (Invertido para el Admin, pero aquí lo mostramos normal para que lo lea bien) -->
+            <div class="p-4 flex items-center justify-between bg-white border-t border-black">
+                <div class="w-1/4">
+                    <img src="/static/img/logo2.png" style="width: 60px;">
+                </div>
+                <div class="w-3/4 text-center">
+                    <p class="font-bold text-[10px] leading-tight">
+                        COORDINACIÓN DE RED DE BIBLIOTECAS<br>
+                        PÚBLICAS DEL ESTADO FALCÓN
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

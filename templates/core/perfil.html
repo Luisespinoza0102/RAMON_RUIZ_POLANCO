@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+    <div class="text-center mb-6">
+        <h2 class="text-2xl font-black text-slate-800">Mi Perfil</h2>
+        <p class="text-slate-500 text-sm">Gestiona tu imagen de identidad</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        <div class="flex flex-col items-center">
+            <div class="h-32 w-32 rounded-3xl overflow-hidden mb-4 border-4 border-slate-50 shadow-lg">
+                {% if perfil.foto_perfil %}
+                    <img src="{{ perfil.foto_perfil.url }}" class="h-full w-full object-cover">
+                {% else %}
+                    <div class="h-full w-full bg-slate-200 flex items-center justify-center text-slate-400">
+                        <i class="fas fa-user text-4xl"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <input type="file" name="foto_perfil" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+        </div>
+        
+        <button type="submit" class="w-full py-3 bg-slate-900 text-white rounded-2xl font-bold hover:bg-blue-600 transition-all">
+            Actualizar Foto
+        </button>
+    </form>
+</div>
+{% endblock %}

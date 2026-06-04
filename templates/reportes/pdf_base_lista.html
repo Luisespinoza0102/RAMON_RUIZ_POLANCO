@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ titulo }}</title>
+    <style>
+        /* Configuración de Página */
+        @page {
+            size: letter;
+            margin: 2.5cm 1.5cm 2.5cm 1.5cm;
+            
+            /* Footer Estacionario */
+            @frame footer_frame {
+                -pdf-frame-content: footerContent;
+                bottom: 1cm;
+                margin-left: 1.5cm;
+                margin-right: 1.5cm;
+                height: 1cm;
+            }
+        }
+
+        /* Tipografía y General */
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #2d3748;
+            line-height: 1.4;
+        }
+
+        /* Encabezado Estilo Institucional */
+        .header-table {
+            width: 100%;
+            border-bottom: 3px solid #1e3a8a;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+        .brand-name {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #1e3a8a;
+            text-transform: uppercase;
+        }
+        .report-type {
+            text-align: right;
+            font-size: 10pt;
+            color: #718096;
+            vertical-align: bottom;
+        }
+
+        /* Títulos Dinámicos */
+        .main-title {
+            font-size: 22pt;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        .azul { color: #1e3a8a; }
+        .rojo { color: #c53030; }
+
+        .info-bar {
+            background-color: #f7fafc;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 5px solid #cbd5e0;
+            margin-bottom: 25px;
+            font-size: 10pt;
+        }
+
+        /* Tabla de Datos Moderna */
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 8px;
+            overflow: hidden; /* Simular bordes redondeados */
+        }
+        table.data-table th {
+            background-color: #1e3a8a;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 10pt;
+            text-transform: uppercase;
+        }
+        /* Cambiar color si es retraso */
+        table.data-table th.retraso-header {
+            background-color: #c53030;
+        }
+
+        table.data-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 9.5pt;
+        }
+        table.data-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        /* Detalles de los campos */
+        .user-name { font-weight: bold; color: #2d3748; }
+        .book-title { font-weight: bold; color: #1a202c; display: block; }
+        .book-code { 
+            font-family: 'Courier', monospace; 
+            color: #4a5568; 
+            font-size: 8.5pt; 
+            background-color: #ebf4ff; 
+            padding: 1px 4px;
+        }
+        .status-badge {
+            font-weight: bold;
+            color: #c53030;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            font-size: 8pt;
+            color: #a0aec0;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <table class="header-table">
+        <tr>
+            <td class="brand-name">BIBLIOTECA PÚBLICA RAMÓN RUÍZ POLANCO</td>
+            <td class="report-type">Sistema de Gestión de Catálogo</td>
+        </tr>
+    </table>
+
+    <h1 class="main-title {% if es_retraso %}rojo{% else %}azul{% endif %}">
+        {{ titulo }}
+    </h1>
+
+    <div class="info-bar">
+        <strong>Referencia:</strong> {{ subtitulo|default:"General" }} | 
+        <strong>Fecha de Emisión:</strong> {{ fecha|date:"d/m/Y H:i" }}
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th width="15%" class="{% if es_retraso %}retraso-header{% endif %}">Fecha</th>
+                <th width="25%" class="{% if es_retraso %}retraso-header{% endif %}">Usuario</th>
+                <th width="40%" class="{% if es_retraso %}retraso-header{% endif %}">Libro / Identificador</th>
+                <th width="20%" class="{% if es_retraso %}retraso-header{% endif %}">
+                    {% if es_retraso %}Vencimiento{% else %}Devolución{% endif %}
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in prestamos %}
+            <tr>
+                <td>{{ p.fecha_aprobacion|date:"d/m/Y" }}</td>
+                <td class="user-name">{{ p.usuario.get_full_name|default:p.usuario.username }}</td>
+                <td>
+                    <span class="book-title">{{ p.ejemplar.libro.titulo }}</span>
+                    <span class="book-code">Cód: {{ p.ejemplar.codigo_inventario }}</span>
+                </td>
+                <td class="{% if es_retraso %}status-badge{% endif %}">
+                    {{ p.fecha_devolucion_esperada|date:"d/m/Y" }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="footerContent" class="footer">
+        Reporte generado automáticamente por RRP © 2026 - 
+        Página <pdf:pagenumber> de <pdf:pagecount>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title_page %}Seguimiento de Actividad{% endblock %}
+
+{% block content %}
+<div class="container mx-auto">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-2xl font-black text-slate-800">Auditoría de Actividad</h2>
+                <p class="text-slate-500 text-sm">Registro detallado de acciones realizadas por administradores.</p>
+            </div>
+            
+            <form method="GET" class="flex flex-wrap gap-3">
+                <select name="admin" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 p-2.5">
+                    <option value="">Todos los Admins</option>
+                    {% for admin in administradores %}
+                        <option value="{{ admin.id }}" {% if request.GET.admin == admin.id|stringformat:"s" %}selected{% endif %}>
+                            {{ admin.username }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <input type="date" name="fecha" value="{{ request.GET.fecha }}"
+                       class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl p-2.5">
+
+                <button type="submit" class="bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-slate-700 transition">
+                    <i class="fas fa-filter mr-2"></i> Filtrar
+                </button>
+                
+                {% if request.GET.admin or request.GET.fecha %}
+                    <a href="{% url 'seguimiento_actividad' %}" class="bg-rose-50 text-rose-600 px-5 py-2.5 rounded-xl font-bold hover:bg-rose-100 transition">
+                        Limpiar
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-50 border-b border-slate-100">
+                <tr>
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha y Hora</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Administrador</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Acción</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Módulo</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Descripción</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+                {% for log in logs %}
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="px-6 py-4">
+                        <span class="text-xs font-bold text-slate-700">{{ log.timestamp|date:"d/m/Y" }}</span><br>
+                        <span class="text-[10px] text-slate-400 uppercase">{{ log.timestamp|date:"H:i:s" }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-2">
+                            <div class="h-7 w-7 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-black text-slate-600">
+                                {{ log.actor.username|slice:":1"|upper }}
+                            </div>
+                            <span class="text-xs font-bold text-slate-700">{{ log.actor.username }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if log.action == 0 %}
+                            <span class="px-2 py-1 rounded-md bg-emerald-100 text-emerald-700 text-[9px] font-black uppercase">Creación</span>
+                        {% elif log.action == 1 %}
+                            <span class="px-2 py-1 rounded-md bg-amber-100 text-amber-700 text-[9px] font-black uppercase">Modificación</span>
+                        {% else %}
+                            <span class="px-2 py-1 rounded-md bg-rose-100 text-rose-700 text-[9px] font-black uppercase">Eliminación</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
+                            {{ log.content_type.model|capfirst }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <p class="text-xs text-slate-600 truncate max-w-xs" title="{{ log.object_repr }}">
+                            Se afectó: <span class="font-bold text-slate-800">{{ log.object_repr }}</span>
+                        </p>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-12 text-center">
+                        <i class="fas fa-search text-slate-200 text-4xl mb-4"></i>
+                        <p class="text-slate-400 text-sm font-medium">No se encontraron registros de actividad.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

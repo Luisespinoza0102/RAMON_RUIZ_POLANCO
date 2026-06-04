@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-6xl mx-auto py-10 text-center">
+    <h1 class="text-4xl font-bold text-slate-800 mb-12">Portal de Reportes</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <a href="{% url 'rep_inventario_estante' %}" class="group bg-white p-8 rounded-2xl shadow-lg border hover:border-blue-500 transition hover:-translate-y-2">
+            <div class="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-600 transition">
+                <i class="fas fa-layer-group text-3xl text-blue-600 group-hover:text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800">Inventario por Estante</h3>
+            <p class="text-sm text-gray-500 mt-2">Conteo por categoría y listado detallado.</p>
+        </a>
+
+        <a href="{% url 'rep_prestamos_mensual' %}" class="group bg-white p-8 rounded-2xl shadow-lg border hover:border-green-500 transition hover:-translate-y-2">
+            <div class="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-green-600 transition">
+                <i class="fas fa-calendar-check text-3xl text-green-600 group-hover:text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800">Préstamos Mensuales</h3>
+            <p class="text-sm text-gray-500 mt-2">Histórico de movimientos por mes.</p>
+        </a>
+
+        <a href="{% url 'rep_prestamos_retrasados' %}" class="group bg-white p-8 rounded-2xl shadow-lg border hover:border-red-500 transition hover:-translate-y-2">
+            <div class="bg-red-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-red-600 transition">
+                <i class="fas fa-exclamation-triangle text-3xl text-red-600 group-hover:text-white"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800">Préstamos Retrasados</h3>
+            <p class="text-sm text-gray-500 mt-2">Control de morosidad y devoluciones pendientes.</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

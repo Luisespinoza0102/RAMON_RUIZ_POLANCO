@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title_page %}Reporte de Morosidad{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-rose-700">
+                Préstamos Retrasados
+            </span>
+        </h1>
+        <a href="{% url 'portal_reportes' %}" class="text-blue-600 hover:text-indigo-800 transition duration-300 flex items-center gap-2 font-bold text-sm">
+            <i class="fas fa-arrow-left"></i> Volver al Portal
+        </a>
+    </div>
+
+    <div class="bg-white p-5 rounded-xl shadow-md mb-8 border border-red-100 flex flex-wrap justify-between items-end gap-4">
+        <form method="GET" class="flex gap-4 items-end">
+            <div class="flex flex-col gap-1">
+                <label class="text-[10px] font-black text-red-500 uppercase tracking-widest ml-1">Filtrar por Mes (Opcional)</label>
+                <input type="month" name="mes" value="{{ mes }}" 
+                       class="p-2.5 bg-slate-50 border border-red-200 rounded-lg text-gray-900 focus:ring-red-500 focus:border-red-500 transition shadow-sm outline-none">
+            </div>
+            <button type="submit" class="bg-gradient-to-r from-red-700 to-rose-800 text-white px-8 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition duration-300">
+                <i class="fas fa-filter mr-2"></i>Filtrar
+            </button>
+            {% if mes %}
+                <a href="{% url 'rep_prestamos_retrasados' %}" class="mb-2.5 text-xs text-gray-400 hover:text-red-600 underline font-bold transition">Ver todos</a>
+            {% endif %}
+        </form>
+
+        {% if prestamos %}
+        <a href="{% url 'pdf_prestamos_retrasados' %}?mes={{ mes }}" target="_blank" 
+           class="bg-slate-900 hover:bg-black text-white px-5 py-2.5 rounded-lg font-bold shadow-md transition flex items-center gap-2 border-b-4 border-slate-700 active:border-b-0">
+            <i class="fas fa-file-pdf text-red-500"></i> Generar Lista de Morosos
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-blue-100">Fecha Préstamo</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Usuario / Deudor</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Libro y Código</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-red-200">Límite de Devolución</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for p in prestamos %}
+                    <tr class="hover:bg-red-50/50 transition duration-150 even:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {{ p.fecha_prestamo|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-bold text-gray-900">{{ p.usuario }}</div>
+                            <div class="flex items-center gap-1 text-[10px] text-red-500 font-bold uppercase">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
+                                Contacto Requerido
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-800 font-medium leading-tight">{{ p.ejemplar.libro.titulo }}</div>
+                            <div class="mt-1 text-[10px] font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 inline-block">
+                                {{ p.ejemplar.codigo_inventario }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="inline-flex items-center px-3 py-1 rounded-lg bg-red-100 text-red-700 border border-red-200 font-black text-xs shadow-sm">
+                                <i class="fas fa-exclamation-circle mr-2"></i>
+                                {{ p.fecha_devolucion|date:"d/m/Y" }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-20 text-center bg-green-50/30">
+                            <div class="flex flex-col items-center gap-3">
+                                <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-2xl shadow-inner">
+                                    <i class="fas fa-check-double"></i>
+                                </div>
+                                <p class="text-green-700 font-bold text-lg uppercase tracking-wide">¡Sin Morosidad!</p>
+                                <p class="text-green-600/70 text-sm">No hay préstamos retrasados registrados.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilo para inputs claros con letras oscuras y foco en rojo para morosidad */
+    input[type="month"] {
+        background-color: #fffafb !important; /* Blanco con toque rojizo muy leve */
+        color: #1e293b !important;
+        border: 1px solid #fecaca !important; /* Rojo suave (red-200) */
+    }
+    input[type="month"]:focus {
+        background-color: #ffffff !important;
+        border-color: #ef4444 !important; /* Rojo (red-500) */
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+        outline: none;
+    }
+</style>
+{% endblock %}

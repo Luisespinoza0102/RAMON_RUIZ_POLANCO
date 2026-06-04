@@ -1,0 +1,281 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+        size: letter;
+        margin: 1.5cm;
+    }
+
+    body {
+        font-family: 'Helvetica', 'Arial', sans-serif;
+        color: #1a1a1a;
+        line-height: 1.3;
+    }
+
+    /* 2. Layout con Tablas (Indispensable para PDF) */
+    .table-full {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    /* 3. Encabezado / Membrete */
+    .header-table {
+        width: 100%;
+        border-bottom: 2px solid #1e3a8a;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .logo-container {
+        width: 110px;
+        text-align: center;
+        vertical-align: middle;
+        padding: 5px;
+    }
+
+    .logo-img {
+        width: 100px;
+        height: auto;
+    }
+
+    .header-text {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .header-text h1 {
+        font-size: 10pt;
+        margin: 0;
+        color: #666666;
+        text-transform: uppercase;
+    }
+
+    .header-text h2 {
+        font-size: 12pt;
+        margin: 2px 0;
+        color: #1e3a8a;
+        font-weight: bold;
+    }
+
+    /* 4. Título del Documento */
+    .doc-title-box {
+        text-align: center;
+        background-color: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        padding: 10px;
+        margin-bottom: 20px;
+    }
+
+    .doc-title {
+        font-size: 14pt;
+        font-weight: bold;
+        color: #0f172a;
+        text-transform: uppercase;
+    }
+
+    .badge-status {
+        text-align: right;
+        margin-bottom: 10px;
+    }
+
+    .status {
+        background-color: #dcfce7;
+        color: #166534;
+        padding: 5px 10px;
+        font-weight: bold;
+        font-size: 9pt;
+        border: 1px solid #bbf7d0;
+    }
+
+    /* 5. Secciones de Datos */
+    .section-label {
+        font-size: 9pt;
+        font-weight: bold;
+        color: #475569;
+        text-transform: uppercase;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 8px;
+        padding-bottom: 2px;
+    }
+
+    .label-small {
+        font-size: 8pt;
+        color: #64748b;
+        text-transform: uppercase;
+    }
+
+    .value-text {
+        font-size: 11pt;
+        font-weight: bold;
+        color: #1e293b;
+    }
+
+    /* 6. Caja del Libro (Diseño formal) */
+    .book-container {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .book-title {
+        font-size: 13pt;
+        color: #1e3a8a;
+        font-weight: bold;
+    }
+
+    /* 7. Cuadro de Instrucción Presencial */
+    .instruction-box {
+        border: 2px dashed #1e3a8a;
+        background-color: #eff6ff;
+        padding: 15px;
+        text-align: center;
+        margin-top: 25px;
+    }
+
+    .instruction-title {
+        color: #1e3a8a;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 11pt;
+        margin-bottom: 5px;
+    }
+
+    /* 8. Firmas */
+    .signature-table {
+        width: 100%;
+        margin-top: 50px;
+    }
+
+    .signature-line {
+        border-top: 1px solid #000000;
+        width: 80%;
+        margin: 0 auto;
+        padding-top: 5px;
+        font-size: 9pt;
+        text-align: center;
+    }
+
+    .sello-recibido {
+        width: 100px;
+        height: 100px;
+        border: 2px double #cbd5e1;
+        border-radius: 50%;
+        text-align: center;
+        padding-top: 30px;
+        color: #cbd5e1;
+        font-size: 7pt;
+    }
+    </style>
+</head>
+<body>
+
+    <table class="header-container">
+        <tr>
+            <td class="logo-side">
+                <img src="{% static 'img/logo1.png' %}" alt="Logo Izquierdo" class="logo-img">
+            </td>
+            
+            <td class="membrete-central">
+                <h1>REPÚBLICA BOLIVARIANA DE VENEZUELA</h1>
+                <h2>Red de Bibliotecas Públicas del Estado Falcón</h2>
+                <div style="font-weight: bold; font-size: 14pt; margin-top: 5px;">Biblioteca Ramón Ruíz Polanco</div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="titulo-recibo">
+        Comprobante Digital de Préstamo
+        <div style="font-size: 9pt; font-weight: normal; margin-top: 4px;">ID de Control: #{{ prestamo.id|stringformat:"05d" }}</div>
+    </div>
+
+    <div style="text-align: right; margin-bottom: 20px;">
+        <span class="status-badge">ESTADO: {{ prestamo.estado|upper }}</span>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Información del Beneficiario</div>
+        <table class="data-table">
+            <tr>
+                <td width="70%">
+                    <div class="label">Nombres y Apellidos:</div>
+                    <div class="value">{{ prestamo.usuario.get_full_name|upper }}</div>
+                </td>
+                <td width="30%">
+                    <div class="label">Cédula de Identidad:</div>
+                    <div class="value">{{ prestamo.usuario.username }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Detalles de la Obra</div>
+        <div class="book-detail-box">
+            <div class="label">Título:</div>
+            <div class="value" style="font-size: 14pt; color: #1e3a8a;">{{ prestamo.ejemplar.libro.titulo }}</div>
+            
+            <table class="data-table" style="margin-top: 10px;">
+                <tr>
+                    <td width="50%">
+                        <div class="label">Código de Inventario:</div>
+                        <div class="value">{{ prestamo.ejemplar.codigo_inventario }}</div>
+                    </td>
+                    <td width="50%">
+                        <div class="label">Ubicación en Sala:</div>
+                        <div class="value">{{ prestamo.ejemplar.ubicacion.nombre }}</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Vigencia del Préstamo</div>
+        <table class="data-table" style="background: #f1f5f9; padding: 10px; border-radius: 8px;">
+            <tr>
+                <td align="center">
+                    <div class="label">Fecha de Salida</div>
+                    <div class="value">{{ prestamo.fecha_aprobacion|date:"d/m/Y" }}</div>
+                </td>
+                <td align="center" style="border-left: 1px solid #cbd5e1;">
+                    <div class="label" style="color: #b91c1c;">Fecha Máxima de Entrega</div>
+                    <div class="value" style="color: #b91c1c;">{{ prestamo.fecha_devolucion_esperada|date:"d/m/Y" }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="aviso-presencial">
+        <strong>¡ACCIÓN REQUERIDA!</strong>
+        Debe imprimir este comprobante y presentarlo físicamente en la biblioteca 
+        para retirar su libro. Este documento es indispensable para el control de inventario.
+    </div>
+
+    <table class="footer-area">
+        <tr>
+            <td class="firma-box" style="vertical-align: bottom;">
+                Firma del Lector
+            </td>
+            <td width="10%"></td>
+            <td align="center">
+                <div class="sello-recibido">
+                    Sello de<br>Biblioteca<br>RRP
+                </div>
+            </td>
+            <td width="10%"></td>
+            <td class="firma-box" style="vertical-align: bottom;">
+                Firma Autorizada y Sello
+            </td>
+        </tr>
+    </table>
+
+    <div style="margin-top: 40px; font-size: 8pt; color: #94a3b8; text-align: center;">
+        Este documento fue generado por el Sistema de Gestión de Bibliotecas del Estado Falcón el {% now "d/m/Y" %} a las {% now "H:i" %}.
+    </div>
+
+</body>
+</html>

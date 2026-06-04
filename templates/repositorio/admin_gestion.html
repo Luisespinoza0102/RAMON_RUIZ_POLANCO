@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title_page %}Gestión de Repositorio{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                Documentos Digitales
+            </span>
+        </h1>
+        <div class="flex gap-3">
+            <a href="{% url 'lista_categorias' %}" class="bg-slate-100 text-slate-600 px-5 py-2.5 rounded-lg hover:bg-slate-200 transition duration-300 flex items-center gap-2 font-medium border border-slate-200">
+                <i class="fas fa-tags"></i> Categorías
+            </a>
+            <a href="{% url 'crear_documento' %}" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-lg hover:shadow-lg transition duration-300 flex items-center gap-2 font-medium">
+                <i class="fas fa-plus"></i> Nuevo Documento
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-xl shadow-md mb-6 border border-gray-100">
+        <form method="GET" action="">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input type="text" name="q" value="{{ request.GET.q|default:'' }}"
+                       class="block w-full pl-10 pr-4 py-3 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm transition" 
+                       placeholder="Buscar por título o autor...">
+                <button type="submit" class="absolute inset-y-0 right-0 px-6 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 font-medium transition">
+                    Buscar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Documento / Autor</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Categoría</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">Descargas</th>
+                        <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for doc in documentos %}
+                    <tr class="hover:bg-blue-50 transition duration-150 even:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="text-base font-bold text-gray-900 leading-tight">{{ doc.titulo }}</span>
+                                <span class="text-sm text-gray-600 flex items-center mt-1">
+                                    <i class="fas fa-user-edit text-xs mr-2 text-indigo-500"></i> {{ doc.autor }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                <i class="fas fa-tag mr-1"></i> {{ doc.categoria.nombre }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <div class="font-bold text-blue-600">{{ doc.descargas }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end items-center gap-2">
+                                <a href="{% url 'editar_documento' doc.id %}" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition" title="Editar">
+                                    <i class="fas fa-edit text-lg"></i>
+                                </a>
+                                <button onclick="confirmarEliminacion('{{ doc.id }}', '{{ doc.titulo|escapejs }}')" 
+                                        class="p-2 text-red-600 hover:bg-red-50 rounded-full transition" title="Eliminar">
+                                    <i class="fas fa-trash-alt text-lg"></i>
+                                </button>
+                                <form action="{% url 'eliminar_documento' doc.id %}" method="POST" id="delete-form-{{ doc.id }}" style="display: none;">
+                                    {% csrf_token %}
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-gray-400">
+                            <i class="fas fa-cloud-upload-alt text-5xl mb-3 opacity-30"></i>
+                            <p class="text-lg italic font-medium">No se encontraron documentos.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmarEliminacion(id, nombre) {
+        if (confirm('¿Estás seguro de eliminar "' + nombre + '"? Esta acción es irreversible.')) {
+            document.getElementById('delete-form-' + id).submit();
+        }
+    }
+</script>
+{% endblock %}

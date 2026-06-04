@@ -1,0 +1,258 @@
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca Pública Ramón Ruíz Polanco</title>
+    {% tailwind_css %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{% static 'img/icono_rrp.png' %}">
+    
+    <style>
+        .sidebar-active { 
+            background: linear-gradient(to right, #1e40af, #3730a3); 
+            border-left: 4px solid #60a5fa; 
+            color: white !important;
+        }
+        /* Scrollbar sutil para el sidebar */
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-gray-800">
+    <!-- Overlay para mobile -->
+     <div id="sidebarOverlay"
+          class="fixed inset-0 bg-black/40 z-10 hidden md:hidden"
+          onclick="toggleSidebar()">
+     </div>
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <aside id="sidebar"
+       class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-20
+              transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+            <div class="h-24 flex items-center justify-center border-b border-slate-800 bg-slate-900 p-4">
+                <img src="{% static 'img/logo_rrp_sin_fondo.png' %}" alt="Logo RRP" class="h-auto w-34 object-contain">
+            </div>
+            
+            <nav class="flex-grow py-6 px-3 space-y-1 overflow-y-auto custom-scroll">
+                {% if user.perfil.rol == 'ADMIN' %}
+                    <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[2px] mt-2 mb-2">Administración</p>
+                    <a href="{% url 'dashboard_admin' %}" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all group">
+                        <i class="fas fa-chart-pie w-6 text-blue-500 group-hover:scale-110 transition"></i> 
+                        <span class="text-sm font-bold">Dashboard</span>
+                    </a>
+                    <a href="{% url 'gestion_libros' %}" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all group">
+                        <i class="fas fa-book w-6 text-indigo-400 group-hover:scale-110 transition"></i> 
+                        <span class="text-sm font-bold">Libros & Stock</span>
+                    </a> 
+                    <a href="{% url 'gestion_ubicaciones' %}" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all group">
+                        <i class="fas fa-map-marker-alt w-6 text-emerald-400 group-hover:scale-110 transition"></i> 
+                        <span class="text-sm font-bold">Estantes</span>
+                        {% if total_ubicaciones > 0 %}
+                            <span class="ml-auto bg-slate-800 border border-slate-700 text-[10px] px-2 py-0.5 rounded-full font-black text-blue-400">{{ total_ubicaciones }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'admin_prestamos' %}" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all group">
+                        <i class="fas fa-exchange-alt w-6 text-amber-400 group-hover:scale-110 transition"></i> 
+                        <span class="text-sm font-bold">Solicitudes</span>
+                        {% if notificaciones_pendientes > 0 %}
+                            <span class="ml-auto bg-red-500 text-[10px] px-2 py-0.5 rounded-full text-white font-black animate-pulse">{{ notificaciones_pendientes }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'gestion_usuarios' %}" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all group">
+                        <i class="fas fa-user-shield w-6 text-purple-400 group-hover:scale-110 transition"></i> 
+                        <span class="text-sm font-bold">Usuarios</span>
+                    </a>
+                    
+                    <a href="{% url 'gestion_repositorio' %}" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all group">
+                        <i class="fas fa-cloud-upload-alt w-6 text-pink-400 group-hover:scale-110 transition"></i>
+                        <span class="text-sm font-bold"> Gestión de Repositorio</span>
+                    </a>
+
+                    <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[2px] mt-6 mb-2">Reportes</p>
+                    <a href="{% url 'portal_reportes' %}" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all group">
+                        <i class="fas fa-file-invoice w-6 text-rose-400 group-hover:scale-110 transition"></i> 
+                        <span class="text-sm font-bold">Portal de Reportes</span>
+                    </a>
+
+                    <a href="{% url 'reporte_circulante' %}" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all group">
+                        <i class="fas fa-chart-pie w-6 text-indigo-400 group-hover:scale-110 transition"></i> 
+                        <span class="text-sm font-bold">Estadísticas Mensuales</span>
+                    </a>
+
+                    <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[2px] mt-6 mb-2">Auditoría</p>
+                    <a href="{% url 'seguimiento_actividad' %}" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all group">
+                        <i class="fas fa-fingerprint w-6 text-cyan-400 group-hover:scale-110 transition"></i>
+                        <span class="text-sm font-bold">Actividad del Sistema</span>
+                    </a>
+
+                    <a href="{% url 'historial_reportes' %}" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all group">
+                        <i class="fas fa-history w-6 text-amber-500 group-hover:scale-110 transition"></i>
+                        <span class="text-sm font-bold">Historial de Reportes</span>
+                    </a>
+
+                {% else %}
+                    <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[2px] mt-2 mb-2">Mi Biblioteca</p>
+                    <a href="{% url 'dashboard_usuario' %}" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all">
+                        <i class="fas fa-th-large w-6 text-blue-400"></i> <span class="text-sm font-bold">Inicio</span>
+                    </a>
+                    <a href="{% url 'catalogo_publico' %}" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all">
+                        <i class="fas fa-search w-6 text-emerald-400"></i> <span class="text-sm font-bold">Catálogo</span>
+                    </a>
+
+                    <a href="{% url 'catalogo_digital' %}" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all">
+                        <i class="fas fa-book-reader w-6 text-purple-400"></i> <span class="text-sm font-bold">Repositorio Digital</span>
+                    </a>
+
+                    <a href="{% url 'mis_prestamos' %}" class="flex items-center px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all">
+                        <i class="fas fa-history w-6 text-amber-400"></i> <span class="text-sm font-bold">Mis Préstamos</span>
+                    </a>
+                {% endif %}
+            </nav>
+            
+            <div class="p-4 border-t border-slate-800">
+                <div class="bg-slate-950/50 rounded-xl p-3 border border-slate-800 text-center">
+                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Version 2.0.26</p>
+                </div>
+            </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col overflow-hidden">
+            
+            <header class="bg-white shadow-sm h-16 flex items-center justify-between px-8 z-10 border-b border-gray-100">
+                                <!-- Botón hamburguesa (solo mobile) -->
+                <button class="md:hidden text-slate-600 text-xl mr-4"
+                        onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2 class="text-lg font-black text-slate-800 tracking-tight">
+                    {% block title_page %}Biblioteca  Pública Ramón Ruíz Polanco{% endblock %}
+                </h2>
+                
+                <div class="flex items-center gap-6">
+                    <div class="relative group">
+                        <button class="text-slate-400 hover:text-blue-600 transition-colors relative p-2 bg-slate-50 rounded-full">
+                            <i class="fas fa-bell text-lg"></i>
+                            {% with unread_count=user.notificaciones.filter.leido_False.count %}
+                                {% if unread_count > 0 %}
+                                    <span class="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-[9px] flex items-center justify-center rounded-full border-2 border-white font-black">
+                                        {{ unread_count }}
+                                    </span>
+                                {% endif %}
+                            {% endwith %}
+                        </button>
+
+                        <div class="absolute right-0 mt-2 w-80 bg-white shadow-2xl rounded-2xl hidden group-hover:block border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                            <div class="p-4 border-b bg-slate-50 flex justify-between items-center">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Notificaciones</span>
+                                <a href="{% url 'mis_notificaciones' %}" class="text-[10px] font-bold text-blue-600 hover:underline">Ver todas</a>
+                            </div>
+                            <div class="max-h-64 overflow-y-auto custom-scroll">
+                                {% for noti in user.notificaciones.all|slice:":5" %}
+                                    <a href="{% url 'marcar_leida' noti.id %}" class="block p-4 border-b hover:bg-slate-50 transition-colors {% if not noti.leido %}bg-blue-50/30{% endif %}">
+                                        <div class="flex gap-3">
+                                            <i class="fas {% if noti.tipo == 'APROBADO' %}fa-check-circle text-emerald-500{% elif noti.tipo == 'RECHAZADO' %}fa-times-circle text-red-500{% else %}fa-info-circle text-blue-500{% endif %} mt-1"></i>
+                                            <div class="flex-1">
+                                                <p class="text-xs text-slate-700 {% if not noti.leido %}font-bold{% endif %} leading-snug">{{ noti.mensaje }}</p>
+                                                <p class="text-[9px] text-slate-400 mt-1 uppercase font-bold">{{ noti.fecha_creacion|timesince }}</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                {% empty %}
+                                    <div class="p-8 text-center text-slate-400">
+                                        <i class="fas fa-envelope-open text-3xl mb-2 opacity-20"></i>
+                                        <p class="text-xs font-medium">No hay novedades</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <a href="{% url 'mis_notificaciones' %}" class="block p-3 text-center text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 border-t">
+                                Ir al centro de notificaciones
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <button onclick="toggleUserMenu()" class="flex items-center gap-3 group focus:outline-none bg-slate-50 hover:bg-slate-100 py-1.5 pl-1.5 pr-3 rounded-full transition-all border border-transparent hover:border-slate-200">
+                            {% if user.perfil.foto_perfil %}
+                                <img src="{{ user.perfil.foto_perfil.url }}" class="h-8 w-8 rounded-full object-cover shadow-sm ring-2 ring-white">
+                            {% else %}
+                                <div class="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-700 to-indigo-800 text-white flex items-center justify-center font-black text-xs shadow-md">
+                                    {{ user.username|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                            <div class="text-left hidden sm:block">
+                                <p class="text-xs font-black text-slate-800 leading-none">{{ user.get_full_name|default:user.username }}</p>
+                                <p class="text-[9px] font-bold text-blue-600 uppercase tracking-tighter mt-1">{{ user.perfil.get_rol_display }}</p>
+                            </div>
+                            <i class="fas fa-chevron-down text-slate-400 text-[10px] group-hover:text-slate-600 transition"></i>
+                        </button>
+
+                        <div id="userDropdown" class="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl py-2 hidden border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-150">
+                            <div class="px-4 py-3 border-b border-gray-50 mb-1">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cuenta</p>
+                            </div>
+                            <a href="{% url 'mi_perfil' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                                <i class="fas fa-user-circle opacity-50"></i> Mi Perfil
+                            </a>
+                            <a href="{% url 'cambiar_password' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                                <i class="fas fa-cog opacity-50"></i> Configuración
+                            </a>
+                            <div class="border-t border-gray-50 my-1"></div>
+                            <form action="{% url 'logout' %}" method="post" class="px-2">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-xl font-bold transition-colors">
+                                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50/50 p-4 md:p-8">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="mb-6 p-4 rounded-2xl text-white {% if message.tags == 'error' %}bg-rose-500{% else %}bg-emerald-500{% endif %} shadow-lg shadow-opacity-20 flex items-center justify-between animate-bounce-short">
+                            <div class="flex items-center gap-3">
+                                <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} text-xl"></i>
+                                <span class="font-bold text-sm">{{ message }}</span>
+                            </div>
+                            <button onclick="this.parentElement.remove()" class="text-white/50 hover:text-white"><i class="fas fa-times"></i></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+          const sidebar = document.getElementById('sidebar');
+          const overlay = document.getElementById('sidebarOverlay');
+      
+          sidebar.classList.toggle('-translate-x-full');
+          overlay.classList.toggle('hidden');
+      }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('userDropdown');
+            menu.classList.toggle('hidden');
+        }
+
+        window.addEventListener('click', function(e) {
+            const menu = document.getElementById('userDropdown');
+            const btn = menu ? menu.previousElementSibling : null;
+            if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

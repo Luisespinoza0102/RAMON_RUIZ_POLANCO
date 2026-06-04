@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-900 p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-white">Gestión de Usuarios</h1>
+                <p class="text-slate-400">Registra y administra los perfiles de la biblioteca</p>
+            </div>
+            <button onclick="document.getElementById('modalUsuario').classList.remove('hidden')" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-900/20">
+                + Nuevo Usuario
+            </button>
+        </div>
+
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-700/50 text-slate-300 uppercase text-xs font-bold">
+                            <th class="p-4">Usuario</th>
+                            <th class="p-4">Cédula</th>
+                            <th class="p-4">Carnet</th>
+                            <th class="p-4">Contacto</th>
+                            <th class="p-4">Rol / Estado</th>
+                            <th class="p-4 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-300 divide-y divide-slate-700">
+                        {% for perfil in usuarios %}
+                        <tr class="hover:bg-slate-700/30 transition-colors">
+                            <td class="p-4">
+                                <div class="flex items-center gap-3">
+                                    {% if perfil.foto_perfil %}
+                                        <img src="{{ perfil.foto_perfil.url }}" class="w-10 h-10 rounded-full object-cover border border-slate-600">
+                                    {% else %}
+                                        <div class="w-10 h-10 rounded-full bg-slate-600 flex items-center justify-center font-bold text-white uppercase">
+                                            {{ perfil.usuario.username|slice:":1" }}
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <p class="font-bold text-white">{{ perfil.usuario.first_name }} {{ perfil.usuario.last_name }}</p>
+                                        <p class="text-xs text-slate-500">{{ perfil.usuario.email }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-4 font-mono text-sm">{{ perfil.cedula }}</td>
+                            <td class="p-4 font-mono text-sm">{{ perfil.carnet }}</td>
+                            <td class="p-4 text-sm">{{ perfil.telefono|default:"---" }}</td>
+                            <td class="p-4">
+                                <span class="px-2 py-1 rounded-md text-[10px] font-bold 
+                                    {% if perfil.rol == 'ADMIN' %} bg-purple-900/30 text-purple-400 {% else %} bg-blue-900/30 text-blue-400 {% endif %}">
+                                    {{ perfil.rol }}
+                                </span>
+                                <span class="ml-2 px-2 py-1 rounded-md text-[10px] font-bold 
+                                    {% if perfil.estado == 'ACTIVO' %} bg-green-900/30 text-green-400 {% else %} bg-yellow-900/30 text-yellow-400 {% endif %}">
+                                    {{ perfil.estado }}
+                                </span>
+                            </td>
+                            <td class="p-4 text-center">
+                                <div class="flex justify-center gap-2">
+                                    <a href="{% url 'editar_usuario' perfil.id %}" class="p-2 bg-slate-700 hover:bg-blue-600 rounded-lg text-white transition-all" title="Editar Usuario">
+                                        <i class="fas fa-edit text-sm"></i>
+                                    </a>
+                                    <a href="{% url 'previsualizar_carnet' perfil.id %}" class="p-2 bg-slate-700 hover:bg-green-600 rounded-lg text-white transition-all" title="Gestionar Carnet">
+                                        <i class="fas fa-id-card"></i>
+                                    </a>
+                                    {% url 'eliminar_usuario' perfil.id as url_eliminar %}
+                                    <button onclick="confirmarEliminacion('{{ url_eliminar }}', '{{ perfil.usuario.get_full_name }}')"
+                                    class="p-2 bg-slate-700 hover:bg-red-600 rounded-lg text-white transition-all" title="Eliminar">
+                                        <i class="fas fa-trash text-sm"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="p-12 text-center text-slate-500 italic">No hay usuarios registrados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalUsuario" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl">
+        <div class="p-6 border-b border-slate-700 flex justify-between items-center sticky top-0 bg-slate-800 z-10">
+            <div>
+                <h2 class="text-xl font-bold text-white">Registrar Nuevo Usuario</h2>
+                <p class="text-xs text-slate-400">Complete los datos y cargue la documentación reglamentaria</p>
+            </div>
+            <button onclick="document.getElementById('modalUsuario').classList.add('hidden')" class="text-slate-400 hover:text-white text-2xl transition-colors">&times;</button>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="p-8 space-y-8">
+            {% csrf_token %}
+            
+            <!-- Foto de Perfil y Datos Principales -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="md:col-span-2 flex items-center gap-6 p-6 bg-slate-900/50 rounded-2xl border border-slate-700/50">
+                    <div class="h-24 w-24 rounded-2xl bg-slate-800 flex items-center justify-center text-slate-600 border-2 border-dashed border-slate-700 overflow-hidden" id="preview-foto-new">
+                        <i class="fas fa-user-plus text-3xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-bold text-slate-300 mb-2">Fotografía del Usuario</label>
+                        <input type="file" name="foto_perfil" id="input-foto-new" accept="image/*" 
+                               class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Campos de Texto -->
+                <div class="space-y-4">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Información Personal</label>
+                    <input type="text" name="nombres" placeholder="Nombres" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    <input type="text" name="apellidos" placeholder="Apellidos" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    <input type="text" name="cedula" placeholder="Cédula (Username)" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+
+                <div class="space-y-4">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Contacto y Registro</label>
+                    <input type="text" name="carnet" placeholder="N° de Carnet" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    <input type="email" name="email" placeholder="Correo Electrónico" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    <input type="text" name="telefono" placeholder="Teléfono" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Dirección de Habitación</label>
+                    <textarea name="direccion" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"></textarea>
+                </div>
+            </div>
+
+            <!-- Sección de Documentos Digitales -->
+            <div class="pt-6 border-t border-slate-700">
+                <h3 class="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4">Documentación Digital</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {% if TIPOS_DOCUMENTOS %}
+                        {% for cod, nombre in TIPOS_DOCUMENTOS %}
+                        <div class="bg-slate-900/40 p-4 rounded-2xl border border-slate-700 flex items-center justify-between group hover:border-slate-500 transition-all">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-bold text-slate-300">{{ nombre }}</span>
+                                <span id="status_new_{{ cod }}" class="text-[10px] text-slate-500 font-mono italic">Pendiente</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="file" name="doc_{{ cod }}" id="file_new_{{ cod }}" class="hidden input-doc-new">
+                                <button type="button" data-cod="{{ cod }}" class="btn-activar-camara-doc p-2.5 bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white rounded-xl transition-all">
+                                    <i class="fas fa-camera text-sm"></i>
+                                </button>
+                                <label for="file_new_{{ cod }}" class="p-2.5 bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-xl cursor-pointer transition-all">
+                                    <i class="fas fa-upload text-sm"></i>
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-span-2 p-4 bg-red-900/20 border border-red-800 rounded-xl text-center">
+                            <p class="text-red-400 text-xs italic">Aviso: No hay tipos de documentos configurados.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Visor de Cámara -->
+            <div id="camera-container" class="hidden bg-black rounded-3xl overflow-hidden border-4 border-slate-700 relative shadow-2xl mt-4">
+                <video id="video" class="w-full aspect-video object-cover"></video>
+                <div class="absolute bottom-6 left-0 right-0 flex justify-center">
+                    <button type="button" id="btn-capturar-doc" class="bg-white text-slate-900 px-8 py-3 rounded-full font-black shadow-2xl hover:bg-blue-500 hover:text-white transition-all transform active:scale-90">
+                        TOMAR FOTOGRAFÍA
+                    </button>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex gap-4 pt-6 border-t border-slate-700">
+                <button type="submit" class="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all transform active:scale-95">
+                    REGISTRAR USUARIO
+                </button>
+                <button type="button" onclick="document.getElementById('modalUsuario').classList.add('hidden')" class="flex-1 bg-slate-700 text-slate-300 font-bold py-4 rounded-2xl hover:bg-slate-600 transition-all">
+                    CANCELAR
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    // 1. Feedback visual para carga de archivos en el modal de creación
+    document.querySelectorAll('.input-doc-new').forEach(input => {
+        input.addEventListener('change', function() {
+            // Buscamos el ID del status basándonos en el ID del input
+            const cod = this.id.replace('file_new_', '');
+            const statusLabel = document.getElementById('status_new_' + cod);
+            if (this.files.length > 0) {
+                statusLabel.innerText = "✓ LISTO PARA SUBIR";
+                statusLabel.classList.remove('text-slate-500');
+                statusLabel.classList.add('text-green-400', 'font-bold');
+            }
+        });
+    });
+
+    // 2. Preview de la foto de perfil al seleccionarla en el modal
+    const inputFoto = document.getElementById('input-foto-new');
+    if (inputFoto) {
+        inputFoto.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('preview-foto-new');
+                    preview.innerHTML = `<img src="${event.target.result}" class="w-full h-full object-cover">`;
+                    preview.classList.remove('border-dashed', 'border-slate-700');
+                    preview.classList.add('border-solid', 'border-blue-500');
+                }
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+    }
+
+    function confirmarEliminacion(url, nombre) {
+    if (confirm('¿Estás seguro de que deseas eliminar permanentemente a ' + nombre + '? Esta acción no se puede deshacer.')) {
+        window.location.href = url;
+    }
+}
+</script>
+<script src="{% static 'js/camera_utils.js' %}?v=1.1"></script>
+{% endblock %}

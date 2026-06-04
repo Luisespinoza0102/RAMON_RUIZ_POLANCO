@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-900 p-4 md:p-8 flex items-center justify-center">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden">
+        <div class="p-6 border-b border-slate-700 bg-slate-800 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-black text-white tracking-tight">{{ titulo_vista }}</h2>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Repositorio Digital / Gestión de Archivos</p>
+            </div>
+            <div class="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center border border-slate-700">
+                <i class="fas fa-file-upload text-indigo-500"></i>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="p-8 space-y-8">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="md:col-span-2 space-y-2">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Título del Documento</label>
+                    {{ form.titulo|add_class:"w-full bg-slate-900 border border-slate-700 rounded-2xl p-4 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium" }}
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Autor</label>
+                    {{ form.autor|add_class:"w-full bg-slate-900 border border-slate-700 rounded-2xl p-4 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium" }}
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Categoría</label>
+                    <div class="flex gap-2">
+                        {{ form.categoria|add_class:"flex-1 bg-slate-900 border border-slate-700 rounded-2xl p-4 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium appearance-none cursor-pointer" }}
+                        <a href="{% url 'lista_categorias' %}" class="w-14 bg-slate-900 border border-slate-700 rounded-2xl flex items-center justify-center text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all shadow-lg" title="Gestionar Categorías">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 space-y-2">
+                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Descripción</label>
+                    {{ form.descripcion|add_class:"w-full bg-slate-900 border border-slate-700 rounded-2xl p-4 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium h-32 resize-none" }}
+                </div>
+
+                <div class="group relative p-6 border-2 border-dashed border-slate-700 rounded-3xl text-center hover:border-indigo-500 transition-all bg-slate-900/50">
+                    <i class="fas fa-file-pdf text-3xl text-slate-600 group-hover:text-indigo-500 mb-3 transition-colors"></i>
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Archivo PDF Requerido</p>
+                    <div class="mt-3 overflow-hidden">
+                        {{ form.archivo_pdf|add_class:"text-xs text-slate-400 cursor-pointer" }}
+                    </div>
+                </div>
+
+                <div class="group relative p-6 border-2 border-dashed border-slate-700 rounded-3xl text-center hover:border-emerald-500 transition-all bg-slate-900/50">
+                    <i class="fas fa-image text-3xl text-slate-600 group-hover:text-emerald-500 mb-3 transition-colors"></i>
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Imagen de Portada (Opcional)</p>
+                    <div class="mt-3 overflow-hidden">
+                        {{ form.portada|add_class:"text-xs text-slate-400 cursor-pointer" }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-4 pt-6 border-t border-slate-700">
+                <button type="submit" class="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-indigo-900/20 transition-all transform active:scale-95 uppercase tracking-widest">
+                    Confirmar Registro
+                </button>
+                <a href="{% url 'gestion_repositorio' %}" class="flex-1 text-center py-5 text-slate-500 font-bold hover:text-white hover:bg-slate-700 rounded-2xl transition-all uppercase tracking-widest text-sm flex items-center justify-center">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

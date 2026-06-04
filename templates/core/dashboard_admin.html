@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title_page %}Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">
+        <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-800">
+            Panel de Control
+        </span>
+    </h1>
+    <p class="text-sm text-gray-500 font-medium">Bienvenido al sistema de gestión bibliotecaria.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:shadow-md transition-all">
+        <div>
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[2px] mb-1">Solicitudes</p>
+            <h2 class="text-4xl font-black text-gray-800">{{ pendientes }}</h2>
+            <p class="text-xs text-yellow-600 font-bold mt-1">Esperando aprobación</p>
+        </div>
+        <div class="bg-yellow-50 p-4 rounded-2xl text-yellow-500 group-hover:scale-110 transition-transform">
+            <i class="fas fa-clock fa-2x"></i>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:shadow-md transition-all">
+        <div>
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[2px] mb-1">Vencidos</p>
+            <h2 class="text-4xl font-black text-red-600">{{ vencidos }}</h2>
+            <p class="text-xs text-red-400 font-bold mt-1">Acción requerida</p>
+        </div>
+        <div class="bg-red-50 p-4 rounded-2xl text-red-500 group-hover:scale-110 transition-transform">
+            <i class="fas fa-exclamation-triangle fa-2x"></i>
+        </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 p-6 rounded-2xl shadow-lg text-white relative overflow-hidden">
+        <div class="relative z-10">
+            <h3 class="font-black text-lg mb-4 uppercase text-[12px] tracking-widest opacity-80">Acciones Rápidas</h3>
+            <div class="flex flex-col gap-3">
+                <a href="{% url 'crear_libro' %}" class="flex items-center justify-between bg-white/10 hover:bg-white/20 px-4 py-2.5 rounded-xl text-sm font-bold transition backdrop-blur-sm border border-white/10">
+                    <span><i class="fas fa-plus-circle mr-2"></i> Nuevo Libro</span>
+                    <i class="fas fa-chevron-right text-[10px] opacity-50"></i>
+                </a>
+                <a href="{% url 'admin_prestamos' %}" class="flex items-center justify-between bg-white/10 hover:bg-white/20 px-4 py-2.5 rounded-xl text-sm font-bold transition backdrop-blur-sm border border-white/10">
+                    <span><i class="fas fa-tasks mr-2"></i> Gestión Préstamos</span>
+                    <i class="fas fa-chevron-right text-[10px] opacity-50"></i>
+                </a>
+            </div>
+        </div>
+        <i class="fas fa-bolt absolute -right-4 -bottom-4 text-8xl opacity-10 rotate-12"></i>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="font-black text-gray-700 text-sm uppercase tracking-wider">
+                <i class="fas fa-layer-group text-blue-600 mr-2"></i>Alertas de Inventario
+            </h3>
+            <span class="text-[10px] bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold uppercase">Acción Urgente</span>
+        </div>
+        <div class="p-0">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50/50 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-3">Título del Libro</th>
+                        <th class="px-6 py-3 text-center">Disponibles</th>
+                        <th class="px-6 py-3 text-right">Estado</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for libro in libros_alerta %}
+                    <tr class="hover:bg-blue-50/30 transition">
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-bold text-gray-800">{{ libro.titulo }}</div>
+                            <div class="text-[10px] text-gray-400 font-mono">{{ libro.cutter }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="text-sm font-black {% if libro.cantidad_disponible == 0 %}text-red-600{% else %}text-amber-600{% endif %}">
+                                {{ libro.cantidad_disponible }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            {% if libro.cantidad_disponible == 0 %}
+                                <span class="text-[9px] font-black bg-red-100 text-red-600 px-2 py-1 rounded uppercase animate-pulse">Agotado</span>
+                            {% else %}
+                                <span class="text-[9px] font-black bg-amber-100 text-amber-600 px-2 py-1 rounded uppercase">Crítico</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="px-6 py-10 text-center text-gray-400 italic text-sm">
+                            <i class="fas fa-check-circle text-emerald-500 mb-2 block text-2xl"></i>
+                            Todo el inventario se encuentra en niveles óptimos.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col">
+        <h3 class="font-black text-gray-700 text-sm uppercase tracking-wider mb-6">
+            <i class="fas fa-chart-bar text-indigo-600 mr-2"></i>Estado de Colección
+        </h3>
+        
+        <div class="grid grid-cols-2 gap-4 flex-grow">
+            <div class="p-4 rounded-2xl bg-slate-50 border border-gray-100 flex flex-col items-center justify-center text-center">
+                <i class="fas fa-book text-blue-600 text-xl mb-2"></i>
+                <span class="text-2xl font-black text-gray-800">{{ total_libros }}</span>
+                <span class="text-[10px] font-bold text-gray-400 uppercase">Títulos</span>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-50 border border-gray-100 flex flex-col items-center justify-center text-center">
+                <i class="fas fa-copy text-indigo-600 text-xl mb-2"></i>
+                <span class="text-2xl font-black text-gray-800">{{ total_ejemplares }}</span>
+                <span class="text-[10px] font-bold text-gray-400 uppercase">Ejemplares</span>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-50 border border-gray-100 flex flex-col items-center justify-center text-center">
+                <i class="fas fa-users text-emerald-600 text-xl mb-2"></i>
+                <span class="text-2xl font-black text-gray-800">{{ total_usuarios }}</span>
+                <span class="text-[10px] font-bold text-gray-400 uppercase">Usuarios</span>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-50 border border-gray-100 flex flex-col items-center justify-center text-center">
+                <i class="fas fa-hand-holding text-rose-600 text-xl mb-2"></i>
+                <span class="text-2xl font-black text-gray-800">{{ total_prestamos_activos }}</span>
+                <span class="text-[10px] font-bold text-gray-400 uppercase">En Préstamo</span>
+            </div>
+        </div>
+
+        <a href="{% url 'portal_reportes' %}" class="mt-6 text-center py-3 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-black transition shadow-lg">
+            Ver Reportes Detallados
+        </a>
+    </div>
+</div>
+{% endblock %}

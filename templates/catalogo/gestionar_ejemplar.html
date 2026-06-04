@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6 bg-slate-800 rounded-2xl mt-10">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-white">Ejemplares de: {{ libro.titulo }}</h2>
+        <a href="{% url 'crear_ejemplar' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
+            + Añadir Ejemplar
+        </a>
+    </div>
+
+    <div class="space-y-4">
+        {% for ejemplar in libro.ejemplares.all %}
+        <div class="flex justify-between items-center p-4 bg-slate-900 rounded-lg border border-slate-700">
+            <div>
+                <p class="text-white font-mono">Cód: {{ ejemplar.codigo_inventario }}</p>
+                <p class="text-slate-400 text-sm">Estado: 
+                    <span class="text-blue-400 font-bold">{{ ejemplar.estado }}</span>
+                </p>
+            </div>
+            <div class="flex gap-2">
+                <button class="text-yellow-500 hover:underline">Editar</button>
+                <button class="text-red-500 hover:underline">Eliminar</button>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center text-slate-500 py-10">Este libro no tiene ejemplares registrados.</p>
+        {% endfor %}
+    </div>
+    
+    <div class="mt-6">
+        <a href="{% url 'gestion_libros' %}" class="text-slate-400 hover:text-white">← Volver al inventario</a>
+    </div>
+</div>
+{% endblock %}

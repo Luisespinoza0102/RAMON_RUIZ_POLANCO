@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title_page %}Control de Préstamos{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                Control de Préstamos
+            </span>
+        </h1>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Usuario</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Libro (Copia)</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Solicitado</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">Estado</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for p in prestamos %}
+                    <tr class="hover:bg-blue-50 transition duration-150 even:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-gray-900 leading-tight">
+                                    {{ p.usuario.first_name }} {{ p.usuario.last_name }}
+                                </span>
+                                <span class="text-xs text-indigo-600 font-medium mt-1 italic">
+                                    <i class="fas fa-id-card mr-1"></i>{{ p.usuario.perfil.dni }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-bold text-gray-800">{{ p.ejemplar.libro.titulo }}</div>
+                            <div class="text-[11px] font-mono text-blue-600 mt-1 uppercase font-bold">
+                                <i class="fas fa-barcode mr-1"></i>{{ p.ejemplar.codigo_inventario }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-xs text-gray-600 font-medium bg-gray-100 px-2 py-1 rounded border border-gray-200">
+                                <i class="far fa-calendar-alt mr-1"></i>{{ p.fecha_solicitud|date:"d/m/Y H:i" }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if p.estado == 'SOLICITADO' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-800 border border-yellow-200 uppercase">
+                                    <i class="fas fa-clock mr-1"></i> Pendiente
+                                </span>
+                            {% elif p.estado == 'APROBADO' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-800 border border-green-200 uppercase">
+                                    <i class="fas fa-check-circle mr-1"></i> Prestado
+                                </span>
+                                {% if p.esta_vencido %}
+                                    <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded bg-red-600 text-white text-[9px] font-black animate-pulse">VENCIDO</span>
+                                {% endif %}
+                            {% elif p.estado == 'RECHAZADO' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800 border border-red-200 uppercase">
+                                    <i class="fas fa-ban mr-1"></i> Rechazado
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-800 border border-gray-200 uppercase">
+                                    {{ p.estado }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex justify-center items-center gap-3">
+                                {% if p.estado == 'SOLICITADO' %}
+                                    <form action="" method="post" class="inline"> 
+                                        {% csrf_token %}
+                                        <input type="hidden" name="accion" value="aprobar">
+                                        <input type="hidden" name="id" value="{{ p.id }}">
+                                        <button type="submit" class="p-2 text-green-600 hover:bg-green-100 rounded-full transition-colors" title="Aprobar Préstamo">
+                                            <i class="fas fa-check-circle text-xl"></i>
+                                        </button>
+                                    </form>
+
+                                    <form action="{% url 'rechazar_prestamo' p.id %}" method="post" class="inline" onsubmit="return confirm('¿Está seguro de que desea rechazar el préstamo de {{ p.usuario.get_full_name }}?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="p-2 text-red-500 hover:bg-red-100 rounded-full transition-colors" title="Rechazar Préstamo">
+                                            <i class="fas fa-times-circle text-xl"></i>
+                                        </button>
+                                    </form>
+                                {% elif p.estado == 'RENOVACION_SOLICITADA' %}
+                                <div class="flex items-center gap-2 bg-purple-50 p-1.5 rounded-lg border border-purple-200">
+                                    <select name="dias_renovacion" form="form-renovar-{{ p.id }}" class="text-xs font-bold bg-white border border-gray-300 rounded p-1 text-gray-700 focus:outline-none focus:border-purple-500">
+                                       <option value="7">7 Días extra</option>
+                                       <option value="15">15 Días extra</option>
+                                   </select>
+                
+                                   <button type="submit" form="form-renovar-{{ p.id }}" name="accion_renovacion" value="aprobar" class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white font-bold text-[11px] rounded transition">
+                                       Aceptar
+                                   </button>
+                
+                                   <button type="submit" form="form-renovar-{{ p.id }}" name="accion_renovacion" value="rechazar" class="px-2 py-1 bg-red-500 hover:bg-red-600 text-white font-bold text-[11px] rounded transition">
+                                       Negar
+                                   </button>
+                               </div>
+
+                               <form id="form-renovar-{{ p.id }}" action="{% url 'procesar_renovacion_admin' p.id %}" method="post" class="hidden" onsubmit="return this.submitted === 'rechazar' ? confirm('¿Rechazar extensión de tiempo?') : true;">
+                                   {% csrf_token %}
+                               </form>
+                               <script>
+
+                                   document.querySelectorAll('[form="form-renovar-{{ p.id }}"]').forEach(btn => {
+                                       btn.addEventListener('click', function() { this.form.submitted = this.value; });
+                                   });
+                               </script>
+
+                                {% elif p.estado == 'APROBADO' %}
+                                    <a href="{% url 'devolver_libro' p.id %}" class="inline-flex items-center gap-2 bg-white border-2 border-blue-500 text-blue-600 px-4 py-1.5 rounded-full text-xs font-bold hover:bg-blue-600 hover:text-white transition duration-300 shadow-sm">
+                                        <i class="fas fa-undo"></i> Recibir
+                                    </a>
+                                    <a href="{% url 'descargar_pdf_usuario' p.id %}" class="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Ver PDF">
+                                        <i class="fas fa-file-pdf text-lg"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                            <i class="fas fa-exchange-alt text-5xl mb-3 opacity-30"></i>
+                            <p class="text-lg italic font-medium">No hay registros de préstamos en este momento.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

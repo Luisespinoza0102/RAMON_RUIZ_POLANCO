@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen py-12 px-4">
+    <div class="max-w-5xl mx-auto">
+        <a href="{% url 'catalogo_digital' %}" class="inline-flex items-center text-slate-400 hover:text-indigo-600 font-bold text-xs uppercase tracking-widest mb-8 transition">
+            <i class="fas fa-arrow-left mr-2"></i> Volver al Catálogo
+        </a>
+
+        <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-indigo-100/50 overflow-hidden border border-slate-100 grid md:grid-cols-12">
+            <div class="md:col-span-4 bg-slate-900 relative min-h-[400px]">
+                {% if documento.portada %}
+                    <img src="{{ documento.portada.url }}" class="w-full h-full object-cover">
+                {% else %}
+                    <div class="w-full h-full bg-gradient-to-b from-indigo-500 to-indigo-800 flex items-center justify-center">
+                        <i class="fas fa-file-pdf text-white/20 text-9xl"></i>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="md:col-span-8 p-10 lg:p-14 flex flex-col">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="bg-indigo-50 text-indigo-600 text-[10px] font-black px-4 py-1.5 rounded-full border border-indigo-100 uppercase tracking-widest">
+                        {{ documento.categoria.nombre }}
+                    </span>
+                    <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+                        <i class="far fa-calendar-alt mr-1"></i> Subido: {{ documento.fecha_subida|date:"F Y" }}
+                    </span>
+                </div>
+
+                <h1 class="text-4xl md:text-5xl font-black text-slate-900 mb-4 leading-tight tracking-tighter uppercase">
+                    {{ documento.titulo }}
+                </h1>
+                <p class="text-xl text-indigo-600 font-bold mb-8 italic">Autor: {{ documento.autor }}</p>
+
+                <div class="bg-slate-50 p-6 rounded-3xl mb-10 border border-slate-100 shadow-inner">
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Descripción del Recurso</h4>
+                    <p class="text-slate-600 leading-relaxed font-medium text-lg">
+                        {{ documento.descripcion|default:"Este documento no posee descripción." }}
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-auto">
+                    <a href="{{ documento.archivo_pdf.url }}" target="_blank" class="flex items-center justify-center gap-3 bg-slate-900 text-white py-5 rounded-2xl font-black text-lg hover:bg-indigo-600 transition shadow-xl shadow-slate-200 active:scale-95">
+                        <i class="fas fa-eye text-xl"></i> LEER ONLINE
+                    </a>
+                    <a href="{{ documento.archivo_pdf.url }}" download="{{ documento.titulo }}.pdf" class="flex items-center justify-center gap-3 bg-indigo-600 text-white py-5 rounded-2xl font-black text-lg hover:bg-indigo-700 transition shadow-xl shadow-indigo-200 active:scale-95">
+                        <i class="fas fa-download text-xl"></i> DESCARGAR PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
