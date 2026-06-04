@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     'theme',
     'django_browser_reload',
 
-    'cloudinary_storage.apps.MediaCloudinaryStorageConfig',
+    'cloudinary_storage.apps.CloudinaryStorageConfig',
     'cloudinary',
 
     # Mis Apps
