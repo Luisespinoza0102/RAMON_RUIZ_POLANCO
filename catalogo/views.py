@@ -16,6 +16,7 @@ from .models import Libro, Ejemplar, Genero, Autor, Editorial, Ubicacion
 from .forms import LibroForm, EjemplarForm, UbicacionForm
 from .utils.generador_cutter import generador
 # Importaciones Externas
+from core.utils import guardar_archivo_sistema
 from recomendacion.models import HistorialBusqueda
 
 # ------------ VISTAS ------------------- #
@@ -107,6 +108,8 @@ def crear_libro(request):
         form = LibroForm(request.POST, request.FILES)
         if form.is_valid():
             libro = form.save(commit=False)
+            if request.FILES.get('imagen_portada'):
+                libro.imagen_portada = guardar_archivo_sistema(request.FILES['imagen_portada'], 'libros')
             autores_seleccionados = request.POST.getlist('autores')
             if autores_seleccionados:
                 primer_autor_id = autores_seleccionados[0]
@@ -136,7 +139,11 @@ def editar_libro(request, pk):
     if request.method == 'POST':
         form = LibroForm(request.POST, request.FILES, instance=libro) #Creamos un formulario asociado al libro existente
         if form.is_valid():
-            form.save()
+            libro_editado = form.save(commit=False)
+            if request.FILES.get('imagen_portada'):
+                libro_editado.imagen_portada = guardar_archivo_sistema(request.FILES['imagen_portada'], 'libros')
+            libro_editado.save()
+            form.save_m2m()
             return redirect('gestion_libros')
     else:
         form = LibroForm(instance=libro)
@@ -224,7 +231,7 @@ def eliminar_ejemplar(request, ejemplar_id):
         return redirect('catalogo_publico')
     
     ejemplar = get_object_or_404(Ejemplar, id=ejemplar_id)
-    libro_id = ejemplar_id.libro.id
+    libro_id = ejemplar.libro.id
     titulo_libro = ejemplar.libro.titulo
 
     ejemplar.delete()

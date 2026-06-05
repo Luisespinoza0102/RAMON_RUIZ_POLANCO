@@ -1,5 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
+from core.utils import guardar_archivo_sistema
 from .models import DocumentoDigital, CategoriaDigital
 from .forms import DocumentoForm, CategoriaForm
 
@@ -37,6 +40,11 @@ def crear_documento(request):
         if form.is_valid():
             doc = form.save(commit=False)
             doc.subido_por = request.user
+            
+            if request.FILES.get('archivo_pdf'):
+                doc.archivo_pdf = guardar_archivo_sistema(request.FILES['archivo_pdf'], 'repositorio/pdfs')
+            if request.FILES.get('portada'):
+                doc.portada = guardar_archivo_sistema(request.FILES['portada'], 'repositorio/portadas')
             doc.save()
             return redirect('gestion_repositorio')
     else:
@@ -46,20 +54,36 @@ def crear_documento(request):
 
 @login_required
 def editar_documento(request, id):
+    if request.user.perfil.rol != 'ADMIN':
+        return redirect('home')
+        
     doc = get_object_or_404(DocumentoDigital, id=id)
     if request.method == 'POST':
         form = DocumentoForm(request.POST, request.FILES, instance=doc)
         if form.is_valid():
-           form.save()
-           return redirect('gestion_repositorio')
+            doc_editado = form.save(commit=False)
+            if request.FILES.get('archivo'):
+                doc_editado.archivo = guardar_archivo_sistema(request.FILES['archivo'], 'repositorio/documentos')
+                
+            if request.FILES.get('imagen_portada'):
+                doc_editado.imagen_portada = guardar_archivo_sistema(request.FILES['imagen_portada'], 'repositorio/portadas')
+                
+            doc_editado.save()
+            messages.success(request, f"Documento '{doc_editado.titulo}' actualizado con éxito.")
+            return redirect('gestion_repositorio')
     else: 
         form = DocumentoForm(instance=doc)
+        
     return render(request, 'repositorio/admin_form.html', {'form': form, 'titulo_vista': 'Editar Documento'})
 
 @login_required
 def eliminar_documento(request, id):
+    if request.user.perfil.rol != 'ADMIN':
+        return redirect('home')
     doc = get_object_or_404(DocumentoDigital, id=id)
+    titulo = doc.titulo
     doc.delete()
+    messages.warning(request, f"El documento {titulo} ha sido removido de los servidores.")
     return redirect('gestion_repositorio')
 
 # Vistas del usuario
@@ -78,5 +102,5 @@ def catalogo_digital(request):
 def detalle_digital(request, id):
     documento = get_object_or_404(DocumentoDigital, id=id)
     documento.descargas += 1
-    documento.save()
+    documento.save(update_fields=['descargas'])
     return render(request, 'repositorio/usuario_detalle.html', {'documento': documento})

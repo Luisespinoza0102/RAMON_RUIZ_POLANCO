@@ -40,11 +40,12 @@ def solicitar_prestamo(request, libro_id):
 
         try:
             with transaction.atomic():
-                fecha_vencimiento = datetime.now() + timedelta(days=7)
+                fecha_vencimiento = timezone.now().date() + timedelta(days=duracion)
                 Prestamo.objects.create(
                     usuario=request.user,
                     ejemplar=ejemplar,
                     estado='SOLICITADO',
+                    duracion_dias=duracion,
                     fecha_devolucion_esperada=fecha_vencimiento
                 )
 
@@ -204,15 +205,18 @@ def procesar_renovacion_admin(request, prestamo_id):
     return redirect('admin_prestamos')
 
 def link_callback(uri, rel):
+    # Si la URI ya viene del almacenamiento en la nube (Cloudinary/S3), la dejamos pasar limpia
+    if uri.startswith('http://') or uri.startswith('https://'):
+        return uri
 
     if uri.startswith(settings.STATIC_URL):
-
         relative_path = uri.replace(settings.STATIC_URL, "").lstrip('/')
     elif uri.startswith(settings.MEDIA_URL):
         relative_path = uri.replace(settings.MEDIA_URL, "").lstrip('/')
     else:
         relative_path = uri.lstrip('/')
 
+    # Buscar en directorios estáticos locales por si el PDF lleva recursos locales (ej. css base o logos internos)
     for static_dir in settings.STATICFILES_DIRS:
         full_path = os.path.join(static_dir, relative_path)
         if os.path.exists(full_path):

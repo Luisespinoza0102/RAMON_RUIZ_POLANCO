@@ -20,6 +20,7 @@ from xhtml2pdf import pisa
 # IMPORTACIONES LOCALES
 from .forms import RegistroUsuarioForm
 from .models import Perfil, Documento_Perfil, TIPOS_DOCUMENTOS
+from .utils import guardar_archivo_sistema
 from prestamos.models import Prestamo, Notificacion
 from prestamos.views import link_callback
 from catalogo.models import Libro
@@ -146,6 +147,8 @@ def gestion_usuarios(request):
                 )
                 
                 u_foto = request.FILES.get('foto_perfil')
+                if u_foto:
+                    u_foto = guardar_archivo_sistema(u_foto, 'perfiles')
 
                 perfil = Perfil.objects.create(
                     usuario=nuevo_user,
@@ -162,10 +165,11 @@ def gestion_usuarios(request):
                 for tipo_cod, tipo_nombre in TIPOS_DOCUMENTOS:
                     archivos = request.FILES.getlist(f'doc_{tipo_cod}')
                     for archivo in archivos:
+                        archivo_procesado = guardar_archivo_sistema(archivo, f'documentos_usarios/{tipo_cod.lower()}')
                         Documento_Perfil.objects.create(
                             perfil=perfil,
                             tipo_documento=tipo_cod,
-                            archivo=archivo
+                            archivo=archivo_procesado
                         )
 
             messages.success(request, f"Usuario {u_nombres} {u_apellidos} registrado correctamente.")
@@ -193,8 +197,9 @@ def editar_usuario(request, user_id):
         for doc_id in docs_a_eliminar:
             doc_obj = perfil.documentos.filter(id=doc_id).first()
             if doc_obj:
-                if doc_obj.archivo and os.path.isfile(doc_obj.archivo.path):
-                    os.remove(doc_obj.archivo.path)
+                if doc_obj.archivo and "http" not in str(doc_obj.archivo):
+                    if os.path.isfile(doc_obj.archivo.path):
+                        os.remove(doc_obj.archivo.path)
                 doc_obj.delete()
         usuario.first_name = request.POST.get('nombres')
         usuario.last_name = request.POST.get('apellidos')
@@ -207,7 +212,7 @@ def editar_usuario(request, user_id):
         perfil.carnet = request.POST.get('carnet')
         perfil.estado = request.POST.get('estado', perfil.estado) 
         if request.FILES.get('foto_perfil'):
-            perfil.foto_perfil = request.FILES.get('foto_perfil')
+            perfil.foto_perfil = guardar_archivo_sistema(request.FILES.get('foto_perfil'), 'perfiles')
         perfil.save()
         for tipo_cod, tipo_nombre in TIPOS_DOCUMENTOS:
             archivos_nuevos = request.FILES.getlist(f'doc_{tipo_cod}')
@@ -218,10 +223,11 @@ def editar_usuario(request, user_id):
                     perfil.documentos.filter(tipo_documento='CARNET').delete()
                     
                 for archivo in archivos_nuevos:
+                    archivo_procesado = guardar_archivo_sistema(archivo, f'documentos_usuarios/{tipo_cod.lower()}')
                     Documento_Perfil.objects.create(
                         perfil=perfil,
                         tipo_documento=tipo_cod,
-                        archivo=archivo
+                        archivo=archivo_procesado
                     )
 
         messages.success(request, f"Usuario {usuario.first_name} {usuario.last_name} actualizado.")
@@ -242,12 +248,14 @@ def eliminar_usuario(request, user_id):
         return redirect('gestion_usuarios')
     try:
         with transaction.atomic():
-            if perfil.foto_perfil and os.path.isfile(perfil.foto_perfil.path):
-                os.remove(perfil.foto_perfil.path)
+            if perfil.foto_perfil and "http" not in str(perfil.foto_perfil):
+                if os.path.isfile(perfil.foto_perfil.path):
+                   os.remove(perfil.foto_perfil.path)
             
             for doc in perfil.documentos.all():
-                if doc.archivo and os.path.isfile(doc.archivo.path):
-                    os.remove(doc.archivo.path)
+                if doc.archivo and "http" not in str(doc.archivo):
+                    if  os.path.isfile(doc.archivo.path):
+                        os.remove(doc.archivo.path)
             nombre_completo = usuario.get_full_name()
             usuario.delete()
 
@@ -262,20 +270,8 @@ def mi_perfil(request):
     if request.method == 'POST':
         if request.FILES.get('foto_perfil'):
             archivo_subido = request.FILES.get('foto_perfil')
-            
-            # SI ESTAMOS EN RENDER: Sube directo a la API de Cloudinary usando la librería nativa
-            if os.getenv('ENVIRONMENT') == 'production':
-                try:
-                    # Se sube en un instante y nos devuelve la URL segura
-                    resultado = cloudinary.uploader.upload(archivo_subido, folder="perfiles")
-                    perfil.foto_perfil = resultado['secure_url']
-                except Exception as e:
-                    messages.error(request, f"Error al subir a la nube: {str(e)}")
-                    return redirect('mi_perfil')
-            else:
-                # SI ESTÁS EN TU CASA (FALCÓN): Guarda el archivo en tu carpeta media local
-                perfil.foto_perfil = archivo_subido
-            
+            # El helper hace la validación de entorno automáticamente
+            perfil.foto_perfil = guardar_archivo_sistema(archivo_subido, "perfiles")
             perfil.save()
             messages.success(request, "¡Tu foto de perfil ha sido actualizada!")
             return redirect('mi_perfil')

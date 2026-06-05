@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load nube_tags %}
 
 {% block content %}
 <div class="container mx-auto p-6">
@@ -26,7 +27,7 @@
                     </td>
                     <td rowspan="3" class="w-32 h-32 border border-black text-center p-1">
                         {% if perfil.foto_perfil %}
-                            <img src="{{ perfil.foto_perfil.url }}" class="w-full h-full object-cover border border-gray-300">
+                            <img src="{{ perfil.foto_perfil|url_nube }}" class="w-full h-full object-cover border border-gray-300">
                         {% else %}
                             <div class="w-full h-full bg-gray-200 flex items-center justify-center text-[10px] text-gray-500">SIN FOTO</div>
                         {% endif %}
