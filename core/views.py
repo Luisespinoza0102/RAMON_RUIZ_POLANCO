@@ -3,6 +3,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 import os
 import base64
+import cloudinary.uploader
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -260,7 +261,21 @@ def mi_perfil(request):
     perfil = request.user.perfil
     if request.method == 'POST':
         if request.FILES.get('foto_perfil'):
-            perfil.foto_perfil = request.FILES.get('foto_perfil')
+            archivo_subido = request.FILES.get('foto_perfil')
+            
+            # SI ESTAMOS EN RENDER: Sube directo a la API de Cloudinary usando la librería nativa
+            if os.getenv('ENVIRONMENT') == 'production':
+                try:
+                    # Se sube en un instante y nos devuelve la URL segura
+                    resultado = cloudinary.uploader.upload(archivo_subido, folder="perfiles")
+                    perfil.foto_perfil = resultado['secure_url']
+                except Exception as e:
+                    messages.error(request, f"Error al subir a la nube: {str(e)}")
+                    return redirect('mi_perfil')
+            else:
+                # SI ESTÁS EN TU CASA (FALCÓN): Guarda el archivo en tu carpeta media local
+                perfil.foto_perfil = archivo_subido
+            
             perfil.save()
             messages.success(request, "¡Tu foto de perfil ha sido actualizada!")
             return redirect('mi_perfil')

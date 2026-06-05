@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import cloudinary_storage
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     'theme',
     'django_browser_reload',
 
-    'cloudinary_storage',
+    #'cloudinary_storage',
     'cloudinary',
 
     # Mis Apps
@@ -140,15 +140,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
 MEDIA_URL = '/media/'
-
-if ENVIRONMENT == 'development':
-    MEDIA_ROOT = BASE_DIR / 'media'
-else:
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    CLOUDINARY_STORAGE = {
-        'STATIC_STORAGE': 'django.contrib.staticfiles.storage.StaticFilesStorage',
-        'API_PROXY': 'http://proxy.server:3128',
-    }
+MEDIA_ROOT = BASE_DIR / 'media'
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dispatch_dashboard'
