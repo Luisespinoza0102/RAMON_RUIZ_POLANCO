@@ -31,8 +31,8 @@ INSTALLED_APPS = [
     'theme',
     'django_browser_reload',
 
-    'cloudinary',
     'cloudinary_storage',
+    'cloudinary',
 
     # Mis Apps
     'auditlog',
@@ -134,26 +134,20 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
-
-    # 1. EL ESCUDO: Le prohíbe explícitamente a Cloudinary tocar tus archivos estáticos
-    'STATIC_STORAGE': 'django.contrib.staticfiles.storage.StaticFilesStorage',
-    
-    # 2. EL CAMINO DIRECTO: Evita que el servidor se quede buscando la ruta en bucle
-    'PREFIX': 'https://res.cloudinary.com',
-}
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+
+if ENVIRONMENT == 'development':
+  MEDIA_ROOT = BASE_DIR / 'media'
+else:
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    CLOUDINARY_STORAGE = {
+        'CLOUDINARY_URL': os.getenv('CLOUDINARY_URL')
+    }
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dispatch_dashboard'
