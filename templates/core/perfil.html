@@ -11,7 +11,11 @@
         <div class="flex flex-col items-center">
             <div class="h-32 w-32 rounded-3xl overflow-hidden mb-4 border-4 border-slate-50 shadow-lg">
                 {% if perfil.foto_perfil %}
+                  {% if "http" in perfil.foto_perfil.url %}
+                    <img src="{{ perfil.foto_perfil }}" class="h-full w-full object-cover">
+                  {% else %}
                     <img src="{{ perfil.foto_perfil.url }}" class="h-full w-full object-cover">
+                  {% endif %}
                 {% else %}
                     <div class="h-full w-full bg-slate-200 flex items-center justify-center text-slate-400">
                         <i class="fas fa-user text-4xl"></i>
