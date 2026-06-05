@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     'django_browser_reload',
 
     'cloudinary',
-    'cloudinary_storage.apps.CloudinaryStorageConfig',
+    'cloudinary_storage',
 
     # Mis Apps
     'auditlog',
@@ -161,7 +161,7 @@ if not DEBUG:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 else:
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorag'
-    
+
 # Configuracion de EMAIL
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
