@@ -135,19 +135,19 @@
                 </h2>
                 
                 <div class="flex items-center gap-6">
-                    <div class="relative group">
-                        <button class="text-slate-400 hover:text-blue-600 transition-colors relative p-2 bg-slate-50 rounded-full">
+                    <div class="relative">
+                        <button id="notiBtn" class="text-slate-400 hover:text-blue-600 transition-colors relative p-2 bg-slate-50 rounded-full">
                             <i class="fas fa-bell text-lg"></i>
                             {% with unread_count=user.notificaciones.filter.leido_False.count %}
                                 {% if unread_count > 0 %}
-                                    <span class="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-[9px] flex items-center justify-center rounded-full border-2 border-white font-black">
+                                    <span class="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-[9px] flex items-center justify-center rounded-full border-2 animate-ping opcaity-75 border-white font-black">
                                         {{ unread_count }}
                                     </span>
                                 {% endif %}
                             {% endwith %}
                         </button>
 
-                        <div class="absolute right-0 mt-2 w-80 bg-white shadow-2xl rounded-2xl hidden group-hover:block border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div id="notificationDropdown" class="absolute right-0 mt-2 w-80 bg-white shadow-2xl rounded-2xl hidden border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                             <div class="p-4 border-b bg-slate-50 flex justify-between items-center">
                                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Notificaciones</span>
                                 <a href="{% url 'mis_notificaciones' %}" class="text-[10px] font-bold text-blue-600 hover:underline">Ver todas</a>
@@ -199,6 +199,11 @@
                             <a href="{% url 'mi_perfil' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors">
                                 <i class="fas fa-user-circle opacity-50"></i> Mi Perfil
                             </a>
+                            {% if user.perfil.rol != 'ADMIN' %}
+                            <a href="{% url 'mi_historial' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                                <i class="fas fa-history opacity-50"></i> Mi Historial
+                            </a>
+                            {% endif %}
                             <a href="{% url 'cambiar_password' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors">
                                 <i class="fas fa-cog opacity-50"></i> Configuración
                             </a>
@@ -232,28 +237,43 @@
         </div>
     </div>
 
-    <script>
-        function toggleSidebar() {
-          const sidebar = document.getElementById('sidebar');
-          const overlay = document.getElementById('sidebarOverlay');
-      
-          sidebar.classList.toggle('-translate-x-full');
-          overlay.classList.toggle('hidden');
-      }
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    }
 
-        function toggleUserMenu() {
-            const menu = document.getElementById('userDropdown');
-            menu.classList.toggle('hidden');
+    function toggleUserMenu() {
+        const menu = document.getElementById('userDropdown');
+        menu.classList.toggle('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const notiBtn = document.getElementById('notiBtn');
+        const notiMenu = document.getElementById('notificationDropdown');
+
+        if (notiBtn && notiMenu) {
+            notiBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                notiMenu.classList.toggle('hidden');
+            });
+
+            window.addEventListener('click', function(e) {
+                if (!notiBtn.contains(e.target) && !notiMenu.contains(e.target)) {
+                    notiMenu.classList.add('hidden');
+                }
+                
+                const userMenu = document.getElementById('userDropdown');
+                const userBtn = userMenu ? userMenu.previousElementSibling : null;
+                if (userMenu && userBtn && !userBtn.contains(e.target) && !userMenu.contains(e.target)) {
+                    userMenu.classList.add('hidden');
+                }
+            });
         }
-
-        window.addEventListener('click', function(e) {
-            const menu = document.getElementById('userDropdown');
-            const btn = menu ? menu.previousElementSibling : null;
-            if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
-                menu.classList.add('hidden');
-            }
-        });
-    </script>
+    });
+</script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

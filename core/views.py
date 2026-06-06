@@ -3,6 +3,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 import os
 import base64
+import requests
 import cloudinary.uploader
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -327,7 +328,22 @@ def previsualizar_carnet(request, user_id):
         return redirect('home')
     
     perfil = get_object_or_404(Perfil, id=user_id)
-    return render(request, 'core/vista_previa_carnet.html', {'perfil':perfil})
+    foto_carnet_doc = perfil.documentos.filter(tipo_documento='FOTO_CARNET').first()
+
+    es_imagen = False
+    foto_carnet_url = None
+
+    if foto_carnet_doc and foto_carnet_doc.archivo:
+        url_archivo = foto_carnet_doc.archivo.url.lower()
+        if any(url_archivo.endswith(ext) for ext in ['.jpg', 'j.peg', '.png', '.webp']):
+            es_imagen = True
+            foto_carnet_url = foto_carnet_doc.archivo.url
+        else:
+            foto_carnet_url = foto_carnet_doc.archivo.url
+    return render(request, 'core/vista_previa_carnet.html', {
+        'perfil':perfil,
+        'foto_carnet_url': foto_carnet_url,
+        'es_imagen': es_imagen,})
 
 @login_required
 def enviar_carnet_usuario(request, user_id):
@@ -359,17 +375,18 @@ def descargar_pdf_carnet(request, perfil_id):
     if os.path.exists(logo_path):
         with open(logo_path, "rb") as f:
             logo_64 = base64.b64encode(f.read()).decode('utf-8')
-        print("✅ Logo encontrado y convertido")
-    else:
-        print(f"❌ ERROR: No se encontró el logo en {logo_path}")
-
+    
     foto_64 = ""
-    if foto_obj and os.path.exists(foto_obj.archivo.path):
-        with open(foto_obj.archivo.path, "rb") as f:
-            foto_64 = base64.b64encode(f.read()).decode('utf-8')
-        print("✅ Foto carnet encontrada y convertida")
-    else:
-        print("⚠️ Advertencia: El usuario no tiene foto tipo carnet")
+    if foto_obj and foto_obj.archivo:
+        url_archivo = foto_obj.archivo.url.lower()
+        
+        if any(url_archivo.endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.webp']):
+            try:
+                response_url = requests.get(foto_obj.archivo.url, timeout=10)
+                if response_url.status_code == 200:
+                    foto_64 = base64.b64encode(response_url.content).decode('utf-8')
+            except Exception as e:
+                print(f"Error al descargar imagen de Cloudinary: {e}")
 
     context = {
         'perfil': perfil,

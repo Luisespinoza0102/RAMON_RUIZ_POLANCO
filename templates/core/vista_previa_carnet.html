@@ -3,9 +3,9 @@
 
 {% block content %}
 <div class="container mx-auto p-6">
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h2 class="text-2xl font-bold text-slate-100">Previsualización de Carnet</h2>
-        <div class="space-x-2">
+        <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
             <a href="{% url 'gestion_usuarios' %}" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition">
                 <i class="fas fa-arrow-left mr-2"></i> Volver
             </a>
@@ -19,15 +19,19 @@
         <p class="text-slate-400 mb-4 text-sm"><i class="fas fa-info-circle mr-2"></i> Así se verá el carnet impreso (Anverso y Reverso)</p>
         
         <div class="bg-white shadow-2xl rounded-sm overflow-hidden text-black" style="width: 350px; border: 1px solid #000;">
-            <!-- FRENTE -->
             <table class="w-full border-collapse" style="border: 1px solid black;">
                 <tr>
                     <td colspan="2" class="p-2 text-center bg-gray-100 font-bold border border-black" style="font-size: 14px;">
                         Biblioteca Pública<br>"Ramón Ruiz Polanco"
                     </td>
                     <td rowspan="3" class="w-32 h-32 border border-black text-center p-1">
-                        {% if perfil.foto_perfil %}
-                            <img src="{{ perfil.foto_perfil|url_nube }}" class="w-full h-full object-cover border border-gray-300">
+                        {% if es_imagen and foto_carnet_url %}
+                            <img src="{{ foto_carnet_url|url_nube }}" class="w-full h-full object-cover border border-gray-300">
+                        {% elif foto_carnet_url %}
+                            <div class="w-full h-full bg-gray-100 flex flex-col items-center justify-center p-1 text-center border border-gray-300">
+                                <i class="fas fa-file-pdf text-red-600 text-xl mb-1"></i>
+                                <span class="text-[9px] font-semibold text-gray-700 leading-tight">DOC / PDF ADJUNTO</span>
+                            </div>
                         {% else %}
                             <div class="w-full h-full bg-gray-200 flex items-center justify-center text-[10px] text-gray-500">SIN FOTO</div>
                         {% endif %}
@@ -51,10 +55,8 @@
                 </tr>
             </table>
 
-            <!-- SEPARADOR DE DOBLEZ -->
             <div class="bg-gray-300 h-4 flex items-center justify-center text-[8px] uppercase tracking-widest text-gray-600">Línea de Doblez</div>
 
-            <!-- REVERSO (Invertido para el Admin, pero aquí lo mostramos normal para que lo lea bien) -->
             <div class="p-4 flex items-center justify-between bg-white border-t border-black">
                 <div class="w-1/4">
                     <img src="/static/img/logo2.png" style="width: 60px;">
