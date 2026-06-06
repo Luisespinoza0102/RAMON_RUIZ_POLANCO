@@ -378,15 +378,22 @@ def descargar_pdf_carnet(request, perfil_id):
     
     foto_64 = ""
     if foto_obj and foto_obj.archivo:
-        url_archivo = foto_obj.archivo.url.lower()
+        url_archivo = foto_obj.archivo.url
+        url_archivo_lower = url_archivo.lower()
         
-        if any(url_archivo.endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.webp']):
+        if any(url_archivo_lower.endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.webp']):
             try:
-                response_url = requests.get(foto_obj.archivo.url, timeout=10)
+                if not url_archivo.startswith('http'):
+                    if hasattr(settings, 'CLOUDINARY_STORAGE') or not settings.DEBUG:
+                        url_archivo = cloudinary.uploader.build_url(foto_obj.archivo.name, secure=True)
+                    else:
+                        url_archivo = request.build_absolute_uri(url_archivo)
+
+                response_url = requests.get(url_archivo, timeout=10)
                 if response_url.status_code == 200:
                     foto_64 = base64.b64encode(response_url.content).decode('utf-8')
             except Exception as e:
-                print(f"Error al descargar imagen de Cloudinary: {e}")
+                print(f"Error al descargar imagen: {e}")
 
     context = {
         'perfil': perfil,
