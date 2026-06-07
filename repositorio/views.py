@@ -63,10 +63,10 @@ def editar_documento(request, id):
         if form.is_valid():
             doc_editado = form.save(commit=False)
             if request.FILES.get('archivo'):
-                doc_editado.archivo = guardar_archivo_sistema(request.FILES['archivo'], 'repositorio/documentos')
+                doc_editado.archivo_pdf = guardar_archivo_sistema(request.FILES['archivo'], 'repositorio/documentos')
                 
             if request.FILES.get('imagen_portada'):
-                doc_editado.imagen_portada = guardar_archivo_sistema(request.FILES['imagen_portada'], 'repositorio/portadas')
+                doc_editado.portada = guardar_archivo_sistema(request.FILES['imagen_portada'], 'repositorio/portadas')
                 
             doc_editado.save()
             messages.success(request, f"Documento '{doc_editado.titulo}' actualizado con éxito.")
