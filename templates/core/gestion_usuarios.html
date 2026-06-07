@@ -39,7 +39,7 @@
                                         <img src="{{ perfil.foto_perfil|url_nube }}" class="w-10 h-10 rounded-full object-cover border border-slate-600">
                                     {% else %}
                                         <div class="w-10 h-10 rounded-full bg-slate-600 flex items-center justify-center font-bold text-white uppercase">
-                                            {{ perfil.usuario.username|slice:":1" }}
+                                            {{ perfil.usuario.first_name|slice:":1" }}
                                         </div>
                                     {% endif %}
                                     <div>
