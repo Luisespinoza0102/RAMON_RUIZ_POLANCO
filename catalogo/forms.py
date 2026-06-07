@@ -8,11 +8,11 @@ class LibroForm(forms.ModelForm):
         fields = ['titulo', 'cutter', 'descripcion', 'imagen_portada', 'autores', 'generos',
                   'origen', 'es_infantil', 'es_bolivariano']
         widgets = {
-            'titulo': forms.TextInput(attrs={'class': 'w-full p-2 border rounded'}),
-            'cutter': forms.TextInput(attrs={'class': 'w-full p-2 border rounded'}),
-            'descripcion': forms.Textarea(attrs={'class': 'w-full p-2 border rounded', 'rows': 3}),
-            'autores': forms.SelectMultiple(attrs={'class': 'w-full p-2 border rounded'}),
-            'generos': forms.SelectMultiple(attrs={'class': 'w-full p-2 border rounded'}),
+            'titulo': forms.TextInput(attrs={'class': 'w-full p-2 text-slate-300 border rounded'}),
+            'cutter': forms.TextInput(attrs={'class': 'w-full p-2 text-slate-300 border rounded'}),
+            'descripcion': forms.Textarea(attrs={'class': 'w-full p-2 border text-slate-300 rounded', 'rows': 3}),
+            'autores': forms.SelectMultiple(attrs={'class': 'w-full p-2 border text-slate-300 rounded'}),
+            'generos': forms.SelectMultiple(attrs={'class': 'w-full p-2 border text-slate-300 rounded'}),
             'imagen_portada': forms.FileInput(attrs={'class': 'hidden', 'id': 'input-portada', 'accept': 'image/*'}),
             'origen': forms.Select(attrs={'class': 'w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-white outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer'}),
             'es_infantil': forms.CheckboxInput(attrs={'class': 'w-5 h-5 rounded border-slate-800 bg-slate-950 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900'}),
