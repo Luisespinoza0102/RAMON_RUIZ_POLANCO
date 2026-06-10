@@ -12,7 +12,7 @@ class RegistroReporte(models.Model):
     admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, verbose_name="Generado por")
     tipo = models.CharField(max_length=50, choices=TIPO_REPORTE)
     fecha_generacion = models.DateTimeField(auto_now_add=True)
-    archivo_respaldo = models.FileField(upload_to='auditoria_reportes/', blank=True, null=True)
+    archivo_respaldo = models.CharField(max_length=500, blank=True, null=True)
 
     def __str__(self):
         return f"{self.get_tipo_display()} - {self.admin.username} ({self.fecha_generacion.strftime('%d/%m/%Y')})"
