@@ -35,19 +35,31 @@ def gestion_repositorio(request):
 def crear_documento(request):
     if request.user.perfil.rol != 'ADMIN':
         return redirect('home')
+        
     if request.method == 'POST':
         form = DocumentoForm(request.POST, request.FILES)
         if form.is_valid():
-            doc = form.save(commit=False)
-            doc.subido_por = request.user
-            
-            if request.FILES.get('archivo_pdf'):
-                doc.archivo_pdf = guardar_archivo_sistema(request.FILES['archivo_pdf'], 'repositorio/pdfs')
-            if request.FILES.get('portada'):
-                doc.portada = guardar_archivo_sistema(request.FILES['portada'], 'repositorio/portadas')
-            doc.save()
-            messages.succes(request, f"Documento '{doc.titulo} cargado con éxito.")
-            return redirect('gestion_repositorio')
+            try:
+                with transaction.atomic():
+                    doc = form.save(commit=False)
+                    doc.subido_por = request.user
+                    
+                    # Carga de archivos hacia Supabase
+                    if request.FILES.get('archivo_pdf'):
+                        doc.archivo_pdf = guardar_archivo_sistema(request.FILES['archivo_pdf'], 'repositorio/pdfs')
+                    if request.FILES.get('portada'):
+                        doc.portada = guardar_archivo_sistema(request.FILES['portada'], 'repositorio/portadas')
+                    
+                    doc.save()
+                    # CORREGIDO: .success bien escrito y string cerrado correctamente
+                    messages.success(request, f"Documento '{doc.titulo}' cargado con éxito.")
+                    return redirect('gestion_repositorio')
+            except Exception as e:
+                messages.error(request, f"Error crítico al guardar en el sistema: {str(e)}")
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"Error en el campo {field}: {error}")
     else:
         form = DocumentoForm()
 
@@ -60,18 +72,25 @@ def editar_documento(request, id):
         
     doc = get_object_or_404(DocumentoDigital, id=id)
     if request.method == 'POST':
-        form = DocumentoForm(request.POST, request.FILES, instance=doc)
+        # Asegúrate de que los nombres de los campos en request.FILES coincidan con tu HTML
+        form = DocumentForm(request.POST, request.FILES, instance=doc)
         if form.is_valid():
-            doc_editado = form.save(commit=False)
-            if request.FILES.get('archivo'):
-                doc_editado.archivo_pdf = guardar_archivo_sistema(request.FILES['archivo'], 'repositorio/documentos')
-                
-            if request.FILES.get('imagen_portada'):
-                doc_editado.portada = guardar_archivo_sistema(request.FILES['imagen_portada'], 'repositorio/portadas')
-                
-            doc_editado.save()
-            messages.success(request, f"Documento '{doc_editado.titulo}' actualizado con éxito.")
-            return redirect('gestion_repositorio')
+            try:
+                with transaction.atomic():
+                    doc_editado = form.save(commit=False)
+                    
+                    # CORREGIDO: Se estandarizan los nombres a 'archivo_pdf' y 'portada' igual que en la creación
+                    if request.FILES.get('archivo_pdf'):
+                        doc_editado.archivo_pdf = guardar_archivo_sistema(request.FILES['archivo_pdf'], 'repositorio/documentos')
+                        
+                    if request.FILES.get('portada'):
+                        doc_editado.portada = guardar_archivo_sistema(request.FILES['portada'], 'repositorio/portadas')
+                        
+                    doc_editado.save()
+                    messages.success(request, f"Documento '{doc_editado.titulo}' actualizado con éxito.")
+                    return redirect('gestion_repositorio')
+            except Exception as e:
+                messages.error(request, f"Error crítico al actualizar el archivo: {str(e)}")
     else: 
         form = DocumentoForm(instance=doc)
         
