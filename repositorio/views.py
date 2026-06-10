@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db import transaction
 
 from core.utils import guardar_archivo_sistema
 from .models import DocumentoDigital, CategoriaDigital
@@ -73,7 +74,7 @@ def editar_documento(request, id):
     doc = get_object_or_404(DocumentoDigital, id=id)
     if request.method == 'POST':
         # Asegúrate de que los nombres de los campos en request.FILES coincidan con tu HTML
-        form = DocumentForm(request.POST, request.FILES, instance=doc)
+        form = DocumentoForm(request.POST, request.FILES, instance=doc)
         if form.is_valid():
             try:
                 with transaction.atomic():
