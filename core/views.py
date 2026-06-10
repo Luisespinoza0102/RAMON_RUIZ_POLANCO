@@ -199,45 +199,58 @@ def editar_usuario(request, user_id):
     usuario = perfil.usuario
 
     if request.method == 'POST':
-        docs_a_eliminar = request.POST.getlist('eliminar_doc')
-        for doc_id in docs_a_eliminar:
-            doc_obj = perfil.documentos.filter(id=doc_id).first()
-            if doc_obj:
-                if doc_obj.archivo and "http" not in str(doc_obj.archivo):
-                    if os.path.isfile(doc_obj.archivo.path):
-                        os.remove(doc_obj.archivo.path)
-                doc_obj.delete()
-        usuario.first_name = request.POST.get('nombres')
-        usuario.last_name = request.POST.get('apellidos')
-        usuario.email = request.POST.get('email')
-        usuario.save()
+        try:
+            with transaction.atomic():
+                # 1. Procesar eliminación de documentos seleccionados
+                docs_a_eliminar = request.POST.getlist('eliminar_doc')
+                for doc_id in docs_a_eliminar:
+                    doc_obj = perfil.documentos.filter(id=doc_id).first()
+                    if doc_obj:
+                        # Se elimina el registro; Supabase maneja el ciclo de almacenamiento remoto
+                        doc_obj.delete()
 
-        perfil.telefono = request.POST.get('telefono')
-        perfil.direccion = request.POST.get('direccion')
-        perfil.rol = request.POST.get('rol')
-        perfil.carnet = request.POST.get('carnet')
-        perfil.estado = request.POST.get('estado', perfil.estado) 
-        if request.FILES.get('foto_perfil'):
-            perfil.foto_perfil = guardar_archivo_sistema(request.FILES.get('foto_perfil'), 'perfiles')
-        perfil.save()
-        for tipo_cod, tipo_nombre in TIPOS_DOCUMENTOS:
-            archivos_nuevos = request.FILES.getlist(f'doc_{tipo_cod}')
-            
-            if archivos_nuevos:
+                # 2. Actualizar datos de la tabla User de Django
+                usuario.first_name = request.POST.get('nombres')
+                usuario.last_name = request.POST.get('apellidos')
+                usuario.email = request.POST.get('email')
+                usuario.save()
 
-                if tipo_cod == 'CARNET':
-                    perfil.documentos.filter(tipo_documento='CARNET').delete()
+                # 3. Actualizar datos del Perfil del usuario
+                perfil.telefono = request.POST.get('telefono')
+                perfil.direccion = request.POST.get('direccion')
+                perfil.rol = request.POST.get('rol')
+                perfil.carnet = request.POST.get('carnet')
+                perfil.estado = request.POST.get('estado', perfil.estado) 
+                
+                # Si subió una nueva foto de perfil, se procesa a Supabase
+                if request.FILES.get('foto_perfil'):
+                    perfil.foto_perfil = guardar_archivo_sistema(request.FILES.get('foto_perfil'), 'perfiles')
+                perfil.save()
+
+                # 4. Procesar la carga de nuevos documentos reglamentarios
+                for tipo_cod, tipo_nombre in TIPOS_DOCUMENTOS:
+                    archivos_nuevos = request.FILES.getlist(f'doc_{tipo_cod}')
                     
-                for archivo in archivos_nuevos:
-                    archivo_procesado = guardar_archivo_sistema(archivo, f'documentos_usuarios/{tipo_cod.lower()}')
-                    Documento_Perfil.objects.create(
-                        perfil=perfil,
-                        tipo_documento=tipo_cod,
-                        archivo=archivo_procesado
-                    )
+                    if archivos_nuevos:
+                        # Si es un documento único como el carnet, limpiamos el anterior en BD
+                        if tipo_cod == 'CARNET':
+                            perfil.documentos.filter(tipo_documento='CARNET').delete()
+                            
+                        for archivo in archivos_nuevos:
+                            archivo_procesado = guardar_archivo_sistema(archivo, f'documentos_usuarios/{tipo_cod.lower()}')
+                            Documento_Perfil.objects.create(
+                                perfil=perfil,
+                                tipo_documento=tipo_cod,
+                                archivo=archivo_procesado
+                            )
 
-        messages.success(request, f"Usuario {usuario.first_name} {usuario.last_name} actualizado.")
-        return redirect('gestion_usuarios')
+                messages.success(request, f"Usuario {usuario.first_name} {usuario.last_name} actualizado correctamente.")
+                return redirect('gestion_usuarios')
+
+        except IntegrityError:
+            messages.error(request, "Error de integridad: Verifique que el correo o documento no estén duplicados.")
+        except Exception as e:
+            messages.error(request, f"Error inesperado al actualizar: {str(e)}")
 
     return render(request, 'core/editar_usuario.html', {'perfil': perfil, 'TIPOS_DOCUMENTOS': TIPOS_DOCUMENTOS})
 
