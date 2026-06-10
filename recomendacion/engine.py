@@ -46,7 +46,7 @@ def obtener_recomendaciones(usuario):
         'habiendo', 'estado', 'estada', 'estados', 'estadas', 'estad'
     ]
 
-    # Usamos la lista manual en lugar del string 'spanish'
+
     tfidf = TfidfVectorizer(stop_words=spanish_stop_words)
     
     # 2. Matriz Matemática

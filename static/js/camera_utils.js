@@ -2,12 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let stream = null;
     let currentTargetInput = null;
 
-    // --- SELECTOR DINÁMICO ---
-    // Esta función busca los elementos cada vez que se necesitan
+    // --- SELECTOR DINÁMICO DE ELEMENTOS ---
     const getActiveElements = () => {
         return {
             video: document.getElementById('video-camara') || document.getElementById('video-camera') || document.getElementById('video'),
             canvas: document.getElementById('canvas-foto') || document.getElementById('canvas-camera') || document.getElementById('canvas'),
+            // Detecta tanto el contenedor del modal como el de la sección de edición
+            docContainer: document.getElementById('camera-container') || document.getElementById('camera-section')
         };
     };
 
@@ -31,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 video.play();
                 video.classList.remove('hidden');
                 
-                // Ocultar contenedor de preview (el de la nubecita) si existe
                 const previewContainer = document.getElementById('preview-container');
                 if (previewContainer) previewContainer.classList.add('hidden');
             };
@@ -73,6 +73,24 @@ document.addEventListener('DOMContentLoaded', () => {
         return dataURL;
     }
 
+    function actualizarLabelEstado(inputElement, mensaje, esExito = true) {
+        if (!inputElement) return;
+        
+        // Extrae el código del documento del ID (funciona para file_new_COD o file_COD)
+        const esModal = inputElement.id.startsWith('file_new_');
+        const cod = esModal ? inputElement.id.replace('file_new_', '') : inputElement.id.replace('file_', '');
+        
+        // Intenta buscar el elemento de estado en el modal o en la vista edición
+        const statusLabel = document.getElementById(`status_new_${cod}`) || document.getElementById(`status_${cod}`);
+        
+        if (statusLabel) {
+            statusLabel.innerText = mensaje;
+            statusLabel.className = esExito 
+                ? "text-[10px] text-green-400 font-bold uppercase tracking-wider block max-w-[180px] truncate"
+                : "text-[10px] text-slate-500 font-mono italic block";
+        }
+    }
+
     function asignarABlobInput(dataURL, input, filename) {
         if (!input || !dataURL) return;
         
@@ -83,6 +101,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 input.files = dataTransfer.files;
+
+                // Despacha un evento de cambio artificial para que los listeners de actualización lo detecten
+                input.dispatchEvent(new Event('change', { bubbles: true }));
             });
     }
 
@@ -112,38 +133,57 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- LÓGICA: DOCUMENTOS (GESTIÓN USUARIOS) ---
+    // --- LÓGICA: DOCUMENTOS (GESTIÓN Y EDICIÓN USUARIOS) ---
+    
+    // Captura el clic del botón de activación para saber qué input cargar
     document.addEventListener('click', async (e) => {
         const btn = e.target.closest('.btn-activar-camara-doc');
         if (btn) {
             const cod = btn.dataset.cod;
-            currentTargetInput = document.getElementById(`file_${cod}`);
+            const { docContainer } = getActiveElements();
+            
+            // Busca el input ya sea en el modal de registro o en la vista de edición
+            currentTargetInput = document.getElementById(`file_new_${cod}`) || document.getElementById(`file_${cod}`);
             
             const placeholder = document.getElementById('camera-placeholder');
-            const container = document.getElementById('camera-container');
-            
             if (placeholder) placeholder.classList.add('hidden');
-            if (container) container.classList.remove('hidden');
+            if (docContainer) docContainer.classList.remove('hidden');
 
             await iniciarCamara();
         }
     });
 
+    // Acción del botón capturar para documentos
     const btnCapturarDoc = document.getElementById('btn-capturar-doc');
     if (btnCapturarDoc) {
         btnCapturarDoc.addEventListener('click', () => {
-            const { video, canvas } = getActiveElements();
+            const { video, canvas, docContainer } = getActiveElements();
             const dataURL = capturarYProcesar(video, canvas);
             
             if (currentTargetInput && dataURL) {
-                asignarABlobInput(dataURL, currentTargetInput, `doc_usuario.jpg`);
-                const cod = currentTargetInput.id.replace('file_', '');
-                const status = document.getElementById(`status_${cod}`);
-                if (status) { 
-                    status.innerText = "¡Listo!"; 
-                    status.className = "text-[10px] text-green-400 font-bold"; 
-                }
+                const esModal = currentTargetInput.id.startsWith('file_new_');
+                const cod = esModal ? currentTargetInput.id.replace('file_new_', '') : currentTargetInput.id.replace('file_', '');
+                
+                asignarABlobInput(dataURL, currentTargetInput, `captura_${cod}.jpg`);
+                
+                detenerCamara();
+                if (docContainer) docContainer.classList.add('hidden');
             }
         });
     }
+
+    // Escucha global de inputs de tipo archivo para inyectar dinámicamente el nombre o feedback visual
+    document.addEventListener('change', (e) => {
+        const input = e.target;
+        if (input.tagName === 'INPUT' && input.type === 'file' && (input.id.startsWith('file_new_') || input.id.startsWith('file_'))) {
+            if (input.files && input.files.length > 0) {
+                const nombreArchivo = input.files[0].name;
+                // Si el nombre es genérico del blob, le damos un mejor aspecto visual
+                const textoVisual = nombreArchivo.startsWith('captura_') ? "✓ FOTO CAPTURADA" : `✓ ${nombreArchivo}`;
+                actualizarLabelEstado(input, textoVisual, true);
+            } else {
+                actualizarLabelEstado(input, "Pendiente", false);
+            }
+        }
+    });
 });

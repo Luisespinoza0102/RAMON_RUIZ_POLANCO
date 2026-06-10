@@ -46,6 +46,7 @@ def crear_documento(request):
             if request.FILES.get('portada'):
                 doc.portada = guardar_archivo_sistema(request.FILES['portada'], 'repositorio/portadas')
             doc.save()
+            messages.succes(request, f"Documento '{doc.titulo} cargado con éxito.")
             return redirect('gestion_repositorio')
     else:
         form = DocumentoForm()

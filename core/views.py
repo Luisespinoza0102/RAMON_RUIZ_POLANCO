@@ -128,6 +128,9 @@ def dashboard_admin(request):
 # CONFIGURACIÓN DE USUARIOS
 @login_required
 def gestion_usuarios(request):
+    if request.user.perfil.rol != 'ADMIN':
+        return redirect('home')
+    
     if request.method == 'POST':
         # Captura de datos básicos
         u_cedula = request.POST.get('cedula')
@@ -149,7 +152,9 @@ def gestion_usuarios(request):
                 
                 u_foto = request.FILES.get('foto_perfil')
                 if u_foto:
-                    u_foto = guardar_archivo_sistema(u_foto, 'perfiles')
+                    u_foto_procesada = guardar_archivo_sistema(u_foto, 'perfiles')
+                else:
+                    u_foto_procesada = None
 
                 perfil = Perfil.objects.create(
                     usuario=nuevo_user,
@@ -157,7 +162,7 @@ def gestion_usuarios(request):
                     carnet=u_carnet,
                     direccion=u_dir,
                     telefono=u_tel,
-                    foto_perfil=u_foto,
+                    foto_perfil=u_foto_procesada,
                     rol='USUARIO',
                     estado='ACTIVO'
                 )
