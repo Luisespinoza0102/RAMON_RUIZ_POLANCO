@@ -43,10 +43,10 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-auto">
-                    <a href="{{ documento.archivo_pdf.url }}" target="_blank" class="flex items-center justify-center gap-3 bg-slate-900 text-white py-5 rounded-2xl font-black text-lg hover:bg-indigo-600 transition shadow-xl shadow-slate-200 active:scale-95">
+                    <a href="{{ documento.archivo_pdf|url_nube }}" target="_blank" class="flex items-center justify-center gap-3 bg-slate-900 text-white py-5 rounded-2xl font-black text-lg hover:bg-indigo-600 transition shadow-xl shadow-slate-200 active:scale-95">
                         <i class="fas fa-eye text-xl"></i> LEER ONLINE
                     </a>
-                    <a href="{{ documento.archivo_pdf.url }}" download="{{ documento.titulo }}.pdf" class="flex items-center justify-center gap-3 bg-indigo-600 text-white py-5 rounded-2xl font-black text-lg hover:bg-indigo-700 transition shadow-xl shadow-indigo-200 active:scale-95">
+                    <a href="{{ documento.archivo_pdf|url_nube }}" download="{{ documento.titulo }}.pdf" class="flex items-center justify-center gap-3 bg-indigo-600 text-white py-5 rounded-2xl font-black text-lg hover:bg-indigo-700 transition shadow-xl shadow-indigo-200 active:scale-95">
                         <i class="fas fa-download text-xl"></i> DESCARGAR PDF
                     </a>
                 </div>
