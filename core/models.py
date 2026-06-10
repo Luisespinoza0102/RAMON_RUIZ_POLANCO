@@ -49,10 +49,7 @@ class Perfil(models.Model):
 class Documento_Perfil(models.Model):
     perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='documentos')
     tipo_documento = models.CharField(max_length=20, choices=TIPOS_DOCUMENTOS)
-    archivo = models.FileField(
-        upload_to='documentos_usuarios/',
-        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])],
-        help_text="Formatos permitidos: PDF, JPG, PNG")
+    archivo = models.CharField(max_length=500)
     fecha_subida = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
