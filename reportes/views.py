@@ -67,20 +67,6 @@ def pdf_inventario_estante(request):
         
     estante = request.GET.get('estante', '')
     resumen, detallado, total_libros, total_ejemplares = get_data_estante(estante)
-    
-    # Lógica de respaldo por si se requiere renderizar imágenes estáticas del servidor local en desarrollo
-    logo_izq_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo1.png')
-    logo_der_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo_carnet.png')
-
-    logo_izq_64 = ""
-    if os.path.exists(logo_izq_path):
-        with open(logo_izq_path, "rb") as f:
-            logo_izq_64 = base64.b64encode(f.read()).decode('utf-8')
-            
-    logo_der_64 = ""
-    if os.path.exists(logo_der_path):
-        with open(logo_der_path, "rb") as f:
-            logo_der_64 = base64.b64encode(f.read()).decode('utf-8')
 
     context = {
         'titulo': f'Inventario Estante: {estante}',
@@ -90,8 +76,8 @@ def pdf_inventario_estante(request):
         'total_ejemplares': total_ejemplares,
         'fecha': timezone.now(),
         'admin_nombre': request.user.get_full_name() or request.user.username,
-        'logo_izq_64': logo_izq_64,
-        'logo_der_64': logo_der_64,
+        'logo_izq_64': '/static/img/logo1.png',
+        'logo_der_64': '/static/img/logo2.png',
     }
     return generar_y_registrar_reporte(
         'reportes/pdf_base_estante.html', 

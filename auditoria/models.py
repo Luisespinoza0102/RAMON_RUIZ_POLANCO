@@ -4,9 +4,9 @@ from django.conf import settings
 # ------------ Modelo para llevar el registro de los reportes ------#
 class RegistroReporte(models.Model):
     TIPO_REPORTE = (
-        ('EXCEL_MENSUAL', 'Reporte Estadístico Mensual'),
-        ('ASISTENCIA', 'Formato de Asistencia'),
-        ('INVENTARIO', 'Reporte de Inventario')
+        ('INVENTARIO', 'Reporte de Inventario'),
+        ('PRESTAMOS', 'Reporte Mensual de Préstamos'),
+        ('RENDIMIENTO', 'Reporte de Morosidad / Retrasos'),
     )
 
     admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, verbose_name="Generado por")
