@@ -36,7 +36,7 @@ def generar_y_registrar_reporte(template_src, context_dict, tipo_reporte, usuari
         nombre_fichero = f"Respaldo_{tipo_reporte}_{fecha_str}.pdf"
 
         archivo_temporal = ContentFile(pdf_content, name=nombre_fichero)
-        url_nube = guardar_archivo_sistema(archivo_temporal, caperta_destino="auditoria_reportes" )
+        url_nube = guardar_archivo_sistema(archivo_temporal, carpeta_destino="auditoria_reportes" )
 
         # Crear registro en la tabla RegistroReporte
         registro = RegistroReporte(

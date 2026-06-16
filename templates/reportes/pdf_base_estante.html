@@ -147,7 +147,7 @@
         <tr>
             <td width="15%" align="left" valign="middle">
                 {% if logo_izq_64 %}
-                    <img src="data:image/png;base64,{{ logo_izq_64 }}" height="55">
+                    <img src="{{ logo_izq_64 }}" height="55">
                 {% else %}
                     <div style="height: 55px; width: 55px;"></div>
                 {% endif %}
@@ -162,7 +162,7 @@
 
             <td width="15%" align="right" valign="middle">
                 {% if logo_der_64 %}
-                    <img src="data:image/png;base64,{{ logo_der_64 }}" height="55">
+                    <img src="{{ logo_der_64 }}" height="55">
                 {% else %}
                     <div style="height: 55px; width: 55px;"></div>
                 {% endif %}
