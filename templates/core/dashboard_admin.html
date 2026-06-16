@@ -83,11 +83,7 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right">
-                            {% if libro.cantidad_disponible == 0 %}
-                                <span class="text-[9px] font-black bg-red-100 text-red-600 px-2 py-1 rounded uppercase animate-pulse">Agotado</span>
-                            {% else %}
-                                <span class="text-[9px] font-black bg-amber-100 text-amber-600 px-2 py-1 rounded uppercase">Crítico</span>
-                            {% endif %}
+                            <span class="text-[9px] font-black bg-red-100 text-red-600 px-2 py-1 rounded uppercase animate-pulse">Agotado</span>
                         </td>
                     </tr>
                     {% empty %}
@@ -100,6 +96,58 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+        <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="font-black text-gray-700 text-sm uppercase tracking-wider">
+                <i class="fas fa-calendar-alt text-indigo-600 mr-2"></i>Fechas de Entrega Pendientes
+            </h3>
+            <span class="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-bold uppercase">Usuarios</span>
+        </div>
+        <div class="p-0 flex-grow">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50/50 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-3">Usuario</th>
+                        <th class="px-6 py-3">Libro Prestado</th>
+                        <th class="px-6 py-3 text-right">Fecha Límite</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for prestamo in proximas_entregas %}
+                    <tr class="hover:bg-indigo-50/30 transition text-xs">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-gray-800">
+                                {{ prestamo.usuario.get_full_name|default:prestamo.usuario.username }}
+                            </div>
+                            <div class="text-[10px] text-gray-400 font-mono">C.I: {{ prestamo.usuario.username }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-gray-600 max-w-[180px] truncate font-medium">
+                            {{ prestamo.ejemplar.libro.titulo }}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <span class="font-mono text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">
+                                {{ prestamo.fecha_devolucion_esperada|date:"d/m/Y" }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="px-6 py-10 text-center text-gray-400 italic text-sm">
+                            <i class="fas fa-info-circle text-gray-400 mb-2 block text-2xl"></i>
+                            No hay préstamos activos pendientes de entrega.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="p-4 bg-gray-50 border-t border-gray-100">
+            <a href="{% url 'admin_prestamos' %}" class="block text-center py-2.5 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-black transition shadow-md">
+                Ver Gestión de Préstamos Completa
+            </a>
         </div>
     </div>
 

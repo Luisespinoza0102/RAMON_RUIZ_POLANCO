@@ -116,13 +116,27 @@ def dashboard_admin(request):
             filter=Q(ejemplares__estado='DISPONIBLE')
         )
     )
-    # Filtramos solo los que están en 0 o nivel crítico (ej. menos de 2)
-    libros_alerta = libros_con_stock.filter(cantidad_disponible__lte=1).order_by('cantidad_disponible')
+    # Filtramos solo los que están en 0 o nivel crítico 
+    libros_alerta = libros_con_stock.filter(cantidad_disponible=0)
+
+    proximas_entregas = Prestamo.objects.filter(
+        estado='APROBADO'
+    ).select_related('usuario', 'ejemplar__libro').order_by('fecha_devolucion_esperada')[:5]
+
+    total_libros = Libro.objects.count()
+    total_ejemplares = libros_con_stock.count()
+    total_usuarios = User.objects.filter(perfil__rol='USUARIO').count()
+    total_prestamos_activos = Prestamo.objects.filter(estado='APROBADO').count()
     
     return render(request, 'core/dashboard_admin.html', {
         'libros_alerta': libros_alerta,
+        'proximas_entregas': proximas_entregas,
         'pendientes': pendientes,
-        'vencidos': vencidos_count
+        'vencidos': vencidos_count,
+        'total_libros': total_libros,
+        'total_ejemplares': total_ejemplares,
+        'total_usuarios': total_usuarios,
+        'total_prestamos_activos': total_prestamos_activos
     })
 
 # CONFIGURACIÓN DE USUARIOS
