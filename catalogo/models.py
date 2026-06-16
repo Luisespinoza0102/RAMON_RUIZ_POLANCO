@@ -73,6 +73,20 @@ class Libro(models.Model):
         return self.titulo
     
     @property
+    def anio(self):
+        ejemplar = self.ejemplares.first()
+        return ejemplar.anio_publicacion if ejemplar else "S/A"
+    
+    @property
+    def autor(self):
+        return ", ".join([a.nombre_completo for a in self.autores.all() or "Autor Desconocido"])
+    
+    @property
+    def categoria(self):
+        genero = self.generos.first()
+        return genero.nombre if genero else "General"
+    
+    @property
     def stock_real(self):
         return self.ejemplares.exclude(estado__in=['DONADO', 'PERDIDO']).count()
     
