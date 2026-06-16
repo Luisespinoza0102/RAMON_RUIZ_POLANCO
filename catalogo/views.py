@@ -40,8 +40,7 @@ def catalogo_publico(request):
         if request.user.is_authenticated:
             HistorialBusqueda.objects.create(
                 usuario=request.user, 
-                termino_busqueda=query,
-                filtros_usados=filtros 
+                termino_busqueda=query
             )
     else:
         libros = Libro.objects.all()

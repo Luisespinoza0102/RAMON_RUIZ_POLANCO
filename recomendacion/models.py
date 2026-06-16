@@ -9,4 +9,4 @@ class HistorialBusqueda(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.usuario.username} buscó '{self.termini_busqueda}'"
+        return f"{self.usuario.username} buscó '{self.termino_busqueda}'"
