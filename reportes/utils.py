@@ -5,6 +5,7 @@ from xhtml2pdf import pisa
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from auditoria.models import RegistroReporte
+from core.utils import guardar_archivo_sistema
 
 def render_to_pdf(template_src, context_dict={}):
     template = get_template(template_src)
@@ -19,8 +20,7 @@ def generar_y_registrar_reporte(template_src, context_dict, tipo_reporte, usuari
     template = get_template(template_src)
     html = template.render(context_dict)
     result = BytesIO()
-    
-    # 🌟 Usamos el link_callback por si las plantillas de reporte llaman imágenes de portadas o firmas
+
     from prestamos.views import link_callback
     
     pdf = pisa.pisaDocument(
@@ -35,13 +35,15 @@ def generar_y_registrar_reporte(template_src, context_dict, tipo_reporte, usuari
         fecha_str = timezone.now().strftime('%Y%m%d_%H%M%S')
         nombre_fichero = f"Respaldo_{tipo_reporte}_{fecha_str}.pdf"
 
+        archivo_temporal = ContentFile(pdf_content, name=nombre_fichero)
+        url_nube = guardar_archivo_sistema(archivo_temporal, caperta_destino="auditoria_reportes" )
+
         # Crear registro en la tabla RegistroReporte
         registro = RegistroReporte(
             admin=usuario,
-            tipo=tipo_reporte
+            tipo=tipo_reporte,
+            archivo_respaldo=url_nube
         )
-
-        registro.archivo_respaldo.save(nombre_fichero, ContentFile(pdf_content))
         registro.save()
 
         response = HttpResponse(pdf_content, content_type='application/pdf')
