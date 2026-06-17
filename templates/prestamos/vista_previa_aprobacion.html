@@ -6,13 +6,13 @@
     <div class="grid grid-cols-2 gap-4 text-white mb-8">
         <p><span class="text-slate-400">Usuario:</span> {{ prestamo.usuario.get_full_name }}</p>
         <p><span class="text-slate-400">Libro:</span> {{ prestamo.ejemplar.libro.titulo }}</p>
-        <p><span class="text-slate-400">Ejemplar ID:</span> {{ prestamo.ejemplar.id|stringformat:".8s" }}</p>
+        <p><span class="text-slate-400">Ejemplar ID:</span> {{ prestamo.ejemplar.codigo_inventario" }}</p>
         <p><span class="text-slate-400">Fecha Solicitud:</span> {{ prestamo.fecha_solicitud|date:"d/m/Y" }}</p>
     </div>
 
     <div class="flex gap-4">
         <a href="{% url 'confirmar_aprobacion' prestamo.id %}" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-center">
-            <i class="fas fa-check mr-2"></i>Confirmar y Abrir PDF
+            <i class="fas fa-check mr-2"></i>Confirmar y Enviar PDF
         </a>
         <a href="{% url 'admin_prestamos' %}" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl text-center">
             Cancelar
