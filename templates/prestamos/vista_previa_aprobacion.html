@@ -6,7 +6,7 @@
     <div class="grid grid-cols-2 gap-4 text-white mb-8">
         <p><span class="text-slate-400">Usuario:</span> {{ prestamo.usuario.get_full_name }}</p>
         <p><span class="text-slate-400">Libro:</span> {{ prestamo.ejemplar.libro.titulo }}</p>
-        <p><span class="text-slate-400">Ejemplar ID:</span> {{ prestamo.ejemplar.codigo_inventario" }}</p>
+        <p><span class="text-slate-400">Ejemplar ID:</span> {{ prestamo.ejemplar.codigo_inventario }}</p>
         <p><span class="text-slate-400">Fecha Solicitud:</span> {{ prestamo.fecha_solicitud|date:"d/m/Y" }}</p>
     </div>
 
