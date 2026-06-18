@@ -305,17 +305,6 @@ def enviar_recordatorio_manual(request, prestamo_id):
         f"Atentamente,\n"
         f"Administración de la Biblioteca Pública Ramón Ruiz Polanco"
     )
+    messages.success(request, f"Recordatorio enviado con éxito a {usuario.get_full_name() or usuario.username}.")
 
-    try:
-        from django.core.mail import send_mail
-        send_mail(
-            asunto,
-            mensaje_email,
-            settings.DEFAULT_FROM_EMAIL,
-            [usuario.email],
-            fail_silently=True
-        )
-        messages.success(request, f"Recordatorio enviado con éxito a {usuario.get_full_name() or usuario.username}.")
-    except Exception as e:
-        messages.warning(request, f"Se registró la alerta interna, pero hubo un detalle con el envío del correo: {str(e)}")
     return redirect('dasboard_admin')
