@@ -17,4 +17,5 @@ urlpatterns = [
     path('notificaciones/leer/<int:notificacion_id>/', views.marcar_leida, name='marcar_leida'),
     path('renovar/solicitar/<uuid:prestamo_id>/', views.solicitar_renovacion, name='solicitar_renovacion'),
     path('renovar/procesar/<uuid:prestamo_id>/', views.procesar_renovacion_admin, name='procesar_renovacion_admin'),
+    path('admin/prestamo/<uuid:prestamo_id>/recordar/', views.enviar_recordatorio_manual, name='enviar_recordatorio_manual'),
 ]

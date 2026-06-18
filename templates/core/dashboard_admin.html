@@ -113,6 +113,7 @@
                         <th class="px-6 py-3">Usuario</th>
                         <th class="px-6 py-3">Libro Prestado</th>
                         <th class="px-6 py-3 text-right">Fecha Límite</th>
+                        <th class="px-6 py-3 text-right">Acción</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -131,6 +132,13 @@
                             <span class="font-mono text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">
                                 {{ prestamo.fecha_devolucion_esperada|date:"d/m/Y" }}
                             </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{% url 'enviar_recordatorio_manual' prestamo.id %}"
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl font-bold text-[11px] hover:bg-amber-500 hover:text-white hover:border-amber-500 transition-all shadow-sm"
+                               title="Notificar entrega">
+                                <i class="fas fa-bell"></i> Recordar
+                            </a>
                         </td>
                     </tr>
                     {% empty %}

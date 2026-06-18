@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.urls import reverse
 from django.db import transaction
+from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 import os
@@ -276,3 +277,45 @@ def marcar_leida(request, notificacion_id):
         return redirect(notificacion.enlace)
 
     return redirect('mis_notificaciones')
+
+@login_required
+def enviar_recordatorio_manual(request, prestamo_id):
+    if request.user.perfil.rol != 'ADMIN':
+        return redirect('home')
+    
+    prestamo = get_object_or_404(Prestamo, id=prestamo_id)
+    usuario = prestamo.usuario
+    titulo_libro = prestamo.ejemplar.libro.titulo
+    fecha_limite = prestamo.fecha_devolucion_esperada.strftime('%d%m%Y')
+
+    Notificacion.objects.create(
+        usuario=usuario,
+        mensaje=f"Recordatorio: La fecha límite para devolver el libro '{titulo_libro} es el {fecha_limite}",
+        tipo='ALERTA'
+    )
+
+    asunto = f"📌 Recordatorio de Devolución: {titulo_libro}"
+    mensaje_email = (
+        f"Estimado(a) {usuario.get_full_name() or usuario.username}, \n\n"
+        f"Le escribimos desde la Biblioteca Pública Ramón Ruiz Polanco para recordarle "
+        f"que tiene un préstamo activo del libro '{titulo_libro}' de nuestra colección.\n\n"
+        f"La fecha límite establecida para su devolución física es el: {fecha_limite}.\n\n"
+        f"Por favor, acuda a las instalaciones de la biblioteca a tiempo para efectuar la entrega "
+        f"o gestionar una renovación en caso de estar disponible. Mantener sus entregas al día "
+        f"permite que otros usuarios disfruten de la lectura y evita limitaciones en su cuenta.\n\n"
+        f"Atentamente,\n"
+        f"Administración de la Biblioteca Pública Ramón Ruiz Polanco"
+    )
+
+    try:
+        send_mail(
+            asunto,
+            mensaje_email,
+            settings.DEFAULT_FROM_EMAIL,
+            [usuario.email],
+            fail_silently=True
+        )
+        messages.success(request, f"Recordatorio enviado con éxito a {usuario.get_full_name() or usuario.username}.")
+    except Exception as e:
+        messages.warning(request, f"Se registró la alerta interna, pero hubo un detalle con el envío del correo: {str(e)}")
+    return redirect('dasboard_admin')
