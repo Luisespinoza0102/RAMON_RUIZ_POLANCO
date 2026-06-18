@@ -4,7 +4,6 @@ from django.contrib import messages
 from django.utils import timezone
 from django.urls import reverse
 from django.db import transaction
-from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 import os
@@ -308,6 +307,7 @@ def enviar_recordatorio_manual(request, prestamo_id):
     )
 
     try:
+        from django.core.mail import send_mail
         send_mail(
             asunto,
             mensaje_email,
