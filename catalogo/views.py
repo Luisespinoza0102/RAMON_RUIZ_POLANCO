@@ -34,7 +34,7 @@ def catalogo_publico(request):
             Q(titulo__icontains=query) | 
             Q(autores__nombre_completo__icontains=query) | 
             Q(generos__nombre__icontains=query)
-        ).distinct()
+        ).distinct().order_by('titulo')
         
         # Guardar en el historial CON LOS FILTROS
         if request.user.is_authenticated:
@@ -43,7 +43,7 @@ def catalogo_publico(request):
                 termino_busqueda=query
             )
     else:
-        libros = Libro.objects.all()
+        libros = Libro.objects.all().order_by('titulo')
     
     return render(request, 'catalogo/lista_publica.html', {'libros': libros})
 
@@ -75,7 +75,7 @@ def gestion_libros(request):
 
     query = request.GET.get('q', '').strip() # Obtenemos parametros de busqueda
     filter_by = request.GET.get('filter_by', 'titulo')
-    libros = Libro.objects.all().prefetch_related('autores', 'generos', 'ejemplares').order_by('-id') 
+    libros = Libro.objects.all().prefetch_related('autores', 'generos', 'ejemplares').order_by('-fecha_creacion') 
     if query: # Aplica la lógica de filtrado
         if filter_by == 'titulo':
             libros = libros.filter(titulo__icontains=query)
@@ -186,11 +186,24 @@ def crear_ejemplar(request):
                 messages.error(request, "Por favor, indique el nombre de la editorial.")
     else:
         form = EjemplarForm()
-    editoriales = Editorial.objects.all()
+    editoriales = Editorial.objects.all().order_by('nombre')
     return render(request, 'catalogo/form_ejemplar.html', {
         'form': form, 
         'editoriales': editoriales
     })
+
+@login_required
+def eliminar_editorial(request, editorial_id):
+    if request.user.perfil.rol != 'ADMIN':
+        return redirect('catalogo_publico')
+    editorial = get_object_or_404(Editorial, id=editorial_id)
+    nombre_editorial = editorial.nombre
+    try:
+        editorial.delete()
+        messages.warning(request, f"La editorial '{nombre_editorial}' ha sido eliminada.")
+    except Exception:
+        messages.error(request, f"No se puede eliminar {nombre_editorial} porque tiene ejemplares asociados en el invetario.")
+    return redirect('crear_ejemplar')
 
 @login_required
 def lista_ejemplares(request, libro_id):
@@ -236,6 +249,7 @@ def eliminar_ejemplar(request, ejemplar_id):
     ejemplar.delete()
     messages.warning(request, f"Ejemplar del libro '{titulo_libro}' eliminado del inventario")
     return redirect('lista_ejemplares', libro_id=libro_id)
+
 
 
 # API
