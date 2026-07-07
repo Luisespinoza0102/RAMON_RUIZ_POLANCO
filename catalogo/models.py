@@ -120,10 +120,13 @@ class Ejemplar(models.Model):
             genero = self.libro.generos.first()
             dewey = genero.codigo_dewey if genero and genero.codigo_dewey else "000"
             cutter = self.libro.cutter if getattr(self.libro, 'cutter', None) else "SC"
-            cantidad_existente = Ejemplar.objects.filter(libro=self.libro).count()
-            correlativo = cantidad_existente + 1
+            prefijo = f"{dewey}-{cutter}-{self.anio_publicacion}-"
+            coincidencias_globales = Ejemplar.objects.filter(
+                codigo_inventario__startswith=prefijo
+            ).count()
 
-            self.codigo_inventario = f"{dewey}-{cutter}-{self.anio_publicacion}-{correlativo:02d}"
+            correlativo = coincidencias_globales + 1
+            self.codigo_inventario = f"{prefijo}{correlativo:02d}"
         
         super().save(*args, **kwargs)
 
