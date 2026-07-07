@@ -183,7 +183,12 @@ def crear_ejemplar(request):
                 messages.success(request, f"Ejemplar registrado con la editorial: {editorial_obj.nombre}")
                 return redirect('gestion_libros')
             else:
-                messages.error(request, "Por favor, indique el nombre de la editorial.")
+                if ejemplar.editorial:
+                    ejemplar.save()
+                    messages.error(request, "Ejemplar registrado con éxito.")
+                    return redirect('gestion_libros')
+                else:
+                    messages.error(request, "Por favor, indique el nombre de la editorial.")
     else:
         form = EjemplarForm()
     editoriales = Editorial.objects.all().order_by('nombre')
