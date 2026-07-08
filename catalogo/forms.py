@@ -9,7 +9,7 @@ class LibroForm(forms.ModelForm):
                   'origen', 'es_infantil', 'es_bolivariano']
         widgets = {
             'titulo': forms.TextInput(attrs={'class': 'w-full p-2 text-slate-300 border rounded'}),
-            'cutter': forms.TextInput(attrs={'class': 'w-full p-2 text-slate-300 border rounded'}),
+            'cutter': forms.TextInput(attrs={'class': 'w-full p-2 text-slate-300 border rounded border-slate-800', 'readonly': 'readonly'}),
             'descripcion': forms.Textarea(attrs={'class': 'w-full p-2 border text-slate-300 rounded', 'rows': 3}),
             'autores': forms.SelectMultiple(attrs={'class': 'w-full p-2 border text-slate-300 rounded'}),
             'generos': forms.SelectMultiple(attrs={'class': 'w-full p-2 border text-slate-300 rounded'}),

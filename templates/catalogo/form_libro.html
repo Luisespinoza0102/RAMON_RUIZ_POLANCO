@@ -18,8 +18,10 @@
     </div>
 
     <div class="max-w-6xl bg-slate-800/30 border border-slate-800 p-8 rounded-3xl shadow-2xl backdrop-blur-sm">
-        <form method="post" enctype="multipart/form-data" class="space-y-8">
+        <form method="post" enctype="multipart/form-data" class="space-y-8" id="formLibroObra">
             {% csrf_token %}
+            
+            <input type="hidden" name="autor_apellido_cutter" id="id_autor_apellido_cutter" value="">
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                 
@@ -36,6 +38,11 @@
                             <i class="fas fa-fingerprint text-blue-500 text-[10px]"></i> Código Cutter
                         </label>
                         {{ form.cutter }}
+                        {% if not es_edicion %}
+                        <p class="text-[10px] text-blue-500 italic">Este campo se genera automáticamente al procesar la información.</p>
+                        {% else %}
+                        <p class="text-[10px] text-amber-500 italic">Modo edición activo: Puede alterar el código Cutter manualmente si es necesario.</p>
+                        {% endif %}
                     </div>
 
                     <div class="space-y-2">
@@ -116,18 +123,24 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest flex justify-between">
-                        <span><i class="fas fa-users text-blue-500 mr-1"></i> Autores</span>
-                        <span class="text-blue-500 text-[9px] lowercase opacity-60">Mantén Ctrl para varios</span>
-                    </label>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                            <i class="fas fa-users text-blue-500 mr-1"></i> Autores
+                        </label>
+                        <label class="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 cursor-pointer select-none text-[11px] font-bold text-slate-400 hover:text-white transition">
+                            <input type="checkbox" name="sin_autor_checkbox" id="id_sin_autor_checkbox" class="w-4 h-4 rounded border-slate-700 bg-slate-950 text-blue-600 focus:ring-blue-500">
+                            <span>Marcar Sin Autor</span>
+                        </label>
+                    </div>
                     <div class="flex gap-3">
-                        <div class="flex-grow select-dark-wrapper">
+                        <div class="flex-grow select-dark-wrapper" id="contenedorSelectAutores">
                             {{ form.autores }}
                         </div>
-                        <button type="button" onclick="openModal('modalAutor')" class="bg-slate-900 border border-slate-700 text-blue-400 px-5 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-lg self-start py-4">
+                        <button type="button" id="btnAbrirModalAutor" onclick="openModal('modalAutor')" class="bg-slate-900 border border-slate-700 text-blue-400 px-5 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-lg self-start py-4">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
+                    <p class="text-[10px] text-blue-500 lowercase opacity-60">Mantén Ctrl para seleccionar varios autores</p>
                 </div>
 
                 <div class="space-y-2">
@@ -166,10 +179,21 @@
             <div class="p-2 bg-blue-600/20 rounded-lg"><i class="fas fa-user-plus text-blue-500"></i></div>
             <h3 class="text-xl font-bold text-white">Nuevo Autor</h3>
         </div>
-        <input type="text" id="inputNombreAutor" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-white mb-6 outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Apellido Nombre">
+        
+        <div class="space-y-4 mb-6">
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Apellido(s)</label>
+                <input type="text" id="inputApellidoAutor" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-white outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Ej: Cervantes">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Nombre(s)</label>
+                <input type="text" id="inputNombreAutor_UI" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-white outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Ej: Miguel de">
+            </div>
+        </div>
+
         <div class="flex justify-end gap-4">
             <button type="button" onclick="closeModal('modalAutor')" class="text-slate-500 font-bold text-xs uppercase hover:text-white transition">Cancelar</button>
-            <button type="button" onclick="saveQuick('autor')" class="bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-500 transition shadow-lg shadow-blue-900/20">Registrar</button>
+            <button type="button" id="btnRegistrarAutorMdl" class="bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-500 transition shadow-lg shadow-blue-900/20">Registrar</button>
         </div>
     </div>
 </div>
@@ -198,8 +222,112 @@
     const URL_CREAR_AUTOR = "{% url 'api_crear_autor' %}";
     const URL_CREAR_GENERO = "{% url 'api_crear_genero' %}";
     const CSRF_TOKEN = "{{ csrf_token }}";
+    const ES_EDICION = "{% if es_edicion %}true{% else %}false{% endif %}" === "true";
 </script>
 <script src="{% static 'js/form_utils.js' %}"></script>
 <script src="{% static 'js/cutter_generator.js' %}"></script>
 <script src="{% static 'js/camera_utils.js' %}?v=1.1"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkSinAutor = document.getElementById('id_sin_autor_checkbox');
+        const selectAutores = document.querySelector('select[name="autores"]');
+        const btnAbrirModalAutor = document.getElementById('btnAbrirModalAutor');
+        const inputCutter = document.querySelector('input[name="cutter"]');
+        const inputHiddenApellido = document.getElementById('id_autor_apellido_cutter');
+        const btnRegistrarAutorMdl = document.getElementById('btnRegistrarAutorMdl');
+
+        if (ES_EDICION && inputCutter) {
+            inputCutter.removeAttribute('readonly');
+            inputCutter.classList.remove('text-slate-500', 'bg-slate-900', 'border-slate-800');
+            inputCutter.classList.add('text-slate-300');
+        }
+
+        if (checkSinAutor && selectAutores) {
+            checkSinAutor.addEventListener('change', function() {
+                if (this.checked) {
+                    selectAutores.selectedIndex = -1;
+                    selectAutores.setAttribute('disabled', 'disabled');
+                    selectAutores.classList.add('opacity-40', 'cursor-not-allowed');
+                    if (btnAbrirModalAutor) btnAbrirModalAutor.setAttribute('disabled', 'disabled');
+                    if (inputHiddenApellido) inputHiddenApellido.value = "Sin Autor";
+                } else {
+                    selectAutores.removeAttribute('disabled');
+                    selectAutores.classList.remove('opacity-40', 'cursor-not-allowed');
+                    if (btnAbrirModalAutor) btnAbrirModalAutor.removeAttribute('disabled');
+                    actualizarApellidoOculto();
+                }
+            });
+        }
+
+        function actualizarApellidoOculto() {
+            if (checkSinAutor && checkSinAutor.checked) {
+                inputHiddenApellido.value = "Sin Autor";
+                return;
+            }
+            if (selectAutores && selectAutores.selectedOptions.length > 0) {
+                const textoAutor = selectAutores.selectedOptions[0].text;
+                const partes = textoAutor.split(' ');
+                inputHiddenApellido.value = partes[0] || "";
+            } else {
+                inputHiddenApellido.value = "";
+            }
+        }
+
+        if (selectAutores) {
+            selectAutores.addEventListener('change', actualizarApellidoOculto);
+        }
+
+        if (btnRegistrarAutorMdl) {
+            btnRegistrarAutorMdl.addEventListener('click', function() {
+                const apellido = document.getElementById('inputApellidoAutor').value.trim();
+                const nombre = document.getElementById('inputNombreAutor_UI').value.trim();
+
+                if (!apellido || !nombre) {
+                    alert('Por favor complete ambos campos (Nombre y Apellido).');
+                    return;
+                }
+
+                const nombreCompletoCompuesto = apellido + " " + nombre;
+                if (inputHiddenApellido) {
+                    inputHiddenApellido.value = apellido;
+                }
+
+                window.saveQuickCustomAutor = function() {
+                    fetch(URL_CREAR_AUTOR, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': CSRF_TOKEN
+                        },
+                        body: JSON.stringify({ nombre_completo: nombreCompletoCompuesto })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.id) {
+                            const option = document.createElement('option');
+                            option.value = data.id;
+                            option.text = nombreCompletoCompuesto;
+                            option.selected = true;
+                            selectAutores.add(option);
+                            
+                            document.getElementById('inputApellidoAutor').value = '';
+                            document.getElementById('inputNombreAutor_UI').value = '';
+                            closeModal('modalAutor');
+                            actualizarApellidoOculto();
+                        } else {
+                            alert('Error al registrar el autor.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error de conexión al guardar autor.');
+                    });
+                };
+
+                window.saveQuickCustomAutor();
+            });
+        }
+    });
+</script>
 {% endblock %}

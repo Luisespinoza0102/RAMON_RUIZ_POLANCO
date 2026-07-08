@@ -109,25 +109,32 @@ def crear_libro(request):
             libro = form.save(commit=False)
             if request.FILES.get('imagen_portada'):
                 libro.imagen_portada = guardar_archivo_sistema(request.FILES['imagen_portada'], 'libros')
-            autores_seleccionados = request.POST.getlist('autores')
-            if autores_seleccionados:
-                primer_autor_id = autores_seleccionados[0]
-                try:
-                    autor_obj = Autor.objects.get(id=primer_autor_id)
-                    libro.cutter = generador.generar_codigo(
-                        autor_obj.nombre_completo, 
-                        libro.titulo
-                    )
-                except Autor.DoesNotExist:
-                    pass
+
+            sin_autor_check = request.POST.get('sin_autor_checkbox') == 'on'
+            if sin_autor_check:
+                libro.cutter = generador.generar_codigo("Sin Autor", libro.titulo)
+            else:
+                autores_seleccionados = request.POST.getlist('autores')
+                if autores_seleccionados:
+                    primer_autor_id = autores_seleccionados[0]
+                    try:
+                        autor_obj = Autor.objects.get(id=primer_autor_id)
+                        apellido_cutter = request.POST.get('autor_apellido_cutter', '').strip()
+                        if apellido_cutter:
+                            libro.cutter = generador.generar_codigo(apellido_cutter, libro.titulo)
+                        else:
+                            libro.cutter = generador.generar_codigo(autor_obj.nombre_completo, libro.titulo)
+                    except Autor.DoesNotExist:
+                        libro.cutter = "SC"
+                else:
+                    libro.cutter = "SC"
             libro.save()
             form.save_m2m()
-
             messages.success(request, f"Libro '{libro.titulo}' registrado con Éxito. Cutter: {libro.cutter}")
             return redirect('gestion_libros')
     else:
-        form = LibroForm()
-    return render(request, 'catalogo/form_libro.html', {'form': form, 'titulo': 'Registrar Nuevo Libro'})
+            form = LibroForm()
+    return render(request, 'catalogo/form_libro.html', {'form': form, 'titulo': 'Registrar Nuevo Libro', 'es_edicion': False})
 
 @login_required
 def editar_libro(request, pk):
@@ -136,17 +143,19 @@ def editar_libro(request, pk):
         return redirect('catalogo_publico')
         
     if request.method == 'POST':
-        form = LibroForm(request.POST, request.FILES, instance=libro) #Creamos un formulario asociado al libro existente
+        form = LibroForm(request.POST, request.FILES, instance=libro)
         if form.is_valid():
             libro_editado = form.save(commit=False)
             if request.FILES.get('imagen_portada'):
                 libro_editado.imagen_portada = guardar_archivo_sistema(request.FILES['imagen_portada'], 'libros')
+            
+            libro_editado.cutter = request.POST.get('cutter', libro.cutter).strip()
             libro_editado.save()
             form.save_m2m()
             return redirect('gestion_libros')
     else:
         form = LibroForm(instance=libro)
-    return render(request, 'catalogo/form_libro.html', {'form': form, 'titulo': 'Editar Libro'})
+    return render(request, 'catalogo/form_libro.html', {'form': form, 'titulo': 'Editar Libro', 'es_edicion': True})
 
 @login_required
 def eliminar_libro(request, pk):
@@ -170,27 +179,62 @@ def crear_ejemplar(request):
     if request.method == 'POST':
         form = EjemplarForm(request.POST)
         nombre_ed = request.POST.get('editorial_manual', '').strip()
+        
+        try:
+            cantidad = int(request.POST.get('cantidad', 1))
+            if cantidad < 1:
+                cantidad = 1
+        except ValueError:
+            cantidad = 1
+
         if form.is_valid():
-            ejemplar = form.save(commit=False)
-            
+            editorial_obj = None
             if nombre_ed:
                 editorial_obj, created = Editorial.objects.get_or_create(
                     nombre__iexact=nombre_ed,
                     defaults={'nombre': nombre_ed}
                 )
-                ejemplar.editorial = editorial_obj
+
+            # Guardamos una variable para mostrar en el mensaje final
+            ultimo_ejemplar = None
+
+            # Iteramos según la cantidad de copias solicitadas
+            for i in range(cantidad):
+                # Generamos una instancia limpia desde los datos validados del formulario
+                ejemplar = form.save(commit=False)
+                
+                # Forzamos a Django y a la base de datos a tratarlo como un registro totalmente nuevo
+                ejemplar.pk = None 
+
+                ejemplar.codigo_inventario = None
+                
+                if editorial_obj:
+                    ejemplar.editorial = editorial_obj
+                
+                # Ejecuta tu lógica interna (método save personalizado) y guarda en MySQL
                 ejemplar.save()
-                messages.success(request, f"Ejemplar registrado con la editorial: {editorial_obj.nombre}")
-                return redirect('gestion_libros')
+                ultimo_ejemplar = ejemplar
+
+            if editorial_obj:
+                messages.success(request, f"{cantidad} ejemplar(es) registrado(s) con la editorial: {editorial_obj.nombre}")
             else:
-                if ejemplar.editorial:
-                    ejemplar.save()
-                    messages.error(request, "Ejemplar registrado con éxito.")
-                    return redirect('gestion_libros')
+                if ultimo_ejemplar and ultimo_ejemplar.editorial:
+                    messages.success(request, f"{cantidad} ejemplar(es) registrado(s) con éxito.")
                 else:
                     messages.error(request, "Por favor, indique el nombre de la editorial.")
+                    return render(request, 'catalogo/form_ejemplar.html', {
+                        'form': form, 
+                        'editoriales': Editorial.objects.all().order_by('nombre')
+                    })
+                    
+            return redirect('gestion_libros')
     else:
-        form = EjemplarForm()
+        libro_id = request.GET.get('libro')
+        if libro_id:
+            form = EjemplarForm(initial={'libro': libro_id})
+        else:
+            form = EjemplarForm()
+            
     editoriales = Editorial.objects.all().order_by('nombre')
     return render(request, 'catalogo/form_ejemplar.html', {
         'form': form, 
@@ -262,7 +306,9 @@ def eliminar_ejemplar(request, ejemplar_id):
 def api_crear_autor(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        nuevo = Autor.objects.create(nombre_completo=data.get('nombre'))
+        nombre_recibido = data.get('nombre_completo', '').strip()
+        
+        nuevo = Autor.objects.create(nombre_completo=nombre_recibido)
         return JsonResponse({'id': nuevo.id, 'nombre': nuevo.nombre_completo})
 
 @login_required

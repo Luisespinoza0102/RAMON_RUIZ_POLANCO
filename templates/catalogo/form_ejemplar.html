@@ -50,10 +50,32 @@
                     </p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-slate-400 text-xs font-bold uppercase ml-1">Copias a Registrar</label>
+                        <div class="flex items-center bg-slate-900 border border-slate-700 rounded-xl p-1 h-[50px]">
+                            <button type="button" onclick="cambiarCantidad(-1)" class="w-12 h-full text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition flex items-center justify-center focus:outline-none">
+                                <i class="fas fa-minus text-xs"></i>
+                            </button>
+                            <input type="number" 
+                                   id="cantidad_input" 
+                                   name="cantidad" 
+                                   value="1" 
+                                   min="1" 
+                                   max="50"
+                                   class="w-full bg-transparent text-center font-bold text-white border-none outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                            <button type="button" onclick="cambiarCantidad(1)" class="w-12 h-full text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition flex items-center justify-center focus:outline-none">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-slate-400 italic ml-1">
+                            Incrementa si vas a ingresar varias copias idénticas.
+                        </p>
+                    </div>
+
                     <div class="space-y-2">
                         <label class="block text-slate-400 text-xs font-bold uppercase ml-1">Año de Publicación</label>
-                        <div class="relative [&>input]:w-full [&>input]:bg-slate-900 [&>input]:border-slate-700 [&>input]:rounded-xl [&>input]:p-3 [&>input]:pl-12 [&>input]:text-white focus-within:[&>input]:ring-2 focus-within:[&>input]:ring-blue-500">
+                        <div class="relative h-[50px] [&>input]:w-full [&>input]:h-full [&>input]:bg-slate-900 [&>input]:border-slate-700 [&>input]:rounded-xl [&>input]:p-3 [&>input]:pl-12 [&>input]:text-white focus-within:[&>input]:ring-2 focus-within:[&>input]:ring-blue-500">
                             <i class="fas fa-calendar-alt absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 z-10"></i>
                             {{ form.anio_publicacion }}
                         </div>
@@ -61,12 +83,12 @@
 
                     <div class="space-y-2">
                         <label class="block text-slate-500 text-xs font-bold uppercase ml-1">Código Inventario</label>
-                        <div class="relative [&>input]:w-full [&>input]:bg-slate-950 [&>input]:border-slate-800 [&>input]:rounded-xl [&>input]:p-3 [&>input]:pl-12 [&>input]:text-slate-600 [&>input]:pointer-events-none [&>input]:select-none">
+                        <div class="relative h-[50px] [&>input]:w-full [&>input]:h-full [&>input]:bg-slate-950 [&>input]:border-slate-800 [&>input]:rounded-xl [&>input]:p-3 [&>input]:pl-12 [&>input]:text-slate-600 [&>input]:pointer-events-none [&>input]:select-none">
                             <i class="fas fa-magic absolute left-4 top-1/2 -translate-y-1/2 text-slate-800 z-10"></i>
                             {{ form.codigo_inventario }}
                         </div>
                         <p class="text-[10px] text-blue-500 italic ml-1">
-                            <i class="fas fa-info-circle"></i> Autogenerado al guardar.
+                            <i class="fas fa-info-circle"></i> Autogenerado correlativo.
                         </p>
                     </div>
                 </div>
@@ -142,12 +164,20 @@
 </style>
 
 <script>
+    function cambiarCantidad(valor) {
+        const input = document.getElementById('cantidad_input');
+        let actual = parseInt(input.value) || 1;
+        actual += valor;
+        if (actual < 1) actual = 1;
+        if (actual > 50) actual = 50;
+        input.value = actual;
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // 1. Forzar al datalist a abrirse completo al hacer click en el input (Mejora UX)
         const editorialInput = document.getElementById('editorial_input');
         if (editorialInput) {
             editorialInput.addEventListener('focus', function() {
-                // Al limpiar momentáneamente el placeholder o simular evento, forzamos el despliegue nativo
                 this.setAttribute('placeholder', 'Escribe para filtrar...');
             });
             editorialInput.addEventListener('blur', function() {
