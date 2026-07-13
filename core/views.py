@@ -2,6 +2,7 @@
 # lIBRERIAS ESTANDAR
 from django.shortcuts import render, redirect, get_object_or_404
 import os
+import io
 import base64
 import requests
 import cloudinary.uploader
