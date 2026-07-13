@@ -360,27 +360,22 @@ def previsualizar_carnet(request, user_id):
         return redirect('home')
     
     perfil = get_object_or_404(Perfil, id=user_id)
+    foto_carnet_doc = perfil.documentos.filter(tipo_documento='FOTO_CARNET').first()
+
     es_imagen = False
     foto_carnet_url = None
 
-    try:
-        # 1. Comprobamos de manera segura si existe la relación y el archivo
-        if hasattr(perfil, 'documentos'):
-            foto_carnet_doc = perfil.documentos.filter(tipo_documento='FOTO_CARNET').first()
-            
-            if foto_carnet_doc and foto_carnet_doc.archivo and hasattr(foto_carnet_doc.archivo, 'url'):
-                url_archivo = foto_carnet_doc.archivo.url.lower()
-                
-                # 2. Validación flexible de la extensión
-                if any(ext in url_archivo for ext in ['.jpg', '.jpeg', '.png', '.webp']):
-                    es_imagen = True
-                
-                foto_carnet_url = foto_carnet_doc.archivo.url
-    except Exception as e:
-        # Esto imprimirá el error real en la consola de Render para que sepas exactamente qué falló
-        logger.error(f"Error crítico en previsualizar_carnet para el usuario {user_id}: {str(e)}")
-        # Opcional: puedes dejar que pase vacía la foto para que cargue la interfaz sin tumbar la app
-    
+    if foto_carnet_doc and foto_carnet_doc.archivo:
+        # Aseguramos obtener la URL como string plano, compatible con Cloudinary y Supabase
+        url_archivo = str(foto_carnet_doc.archivo.url).lower() if hasattr(foto_carnet_doc.archivo, 'url') else str(foto_carnet_doc.archivo).lower()
+        
+        # Guardamos la URL original limpia
+        foto_carnet_url = foto_carnet_doc.archivo.url if hasattr(foto_carnet_doc.archivo, 'url') else foto_carnet_doc.archivo
+        
+        # Validamos si es imagen por el nombre del archivo o su URL
+        if any(ext in url_archivo for ext in ['.jpg', '.jpeg', '.png', '.webp']):
+            es_imagen = True
+
     return render(request, 'core/vista_previa_carnet.html', {
         'perfil': perfil,
         'foto_carnet_url': foto_carnet_url,
