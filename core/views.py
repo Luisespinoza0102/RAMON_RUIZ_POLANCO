@@ -407,7 +407,7 @@ def descargar_pdf_carnet(request, perfil_id):
     perfil = get_object_or_404(Perfil, id=perfil_id)
     foto_obj = perfil.documentos.filter(tipo_documento='FOTO_CARNET').first()
 
-    logo_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo_carnet.png')
+    logo_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo_rrp_sin_fondo.png')
     logo_64 = ""
     if os.path.exists(logo_path):
         with open(logo_path, "rb") as f:
@@ -425,7 +425,8 @@ def descargar_pdf_carnet(request, perfil_id):
                         url_archivo = cloudinary.uploader.build_url(foto_obj.archivo.name, secure=True)
                     else:
                         url_archivo = request.build_absolute_uri(url_archivo)
-
+                
+                headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
                 response_url = requests.get(url_archivo, timeout=10)
                 if response_url.status_code == 200:
                     foto_64 = base64.b64encode(response_url.content).decode('utf-8')
@@ -440,10 +441,20 @@ def descargar_pdf_carnet(request, perfil_id):
 
     template_path = 'core/carnet_pdf.html'
     html = render_to_string(template_path, context)
-    response = HttpResponse(content_type='application/pdf')
 
-    pisa_status = pisa.CreatePDF(html, dest=response)
+    pdf_buffer = io.BytesIO()
+    pisa_status = pisa.CreatePDF(html, dest=pdf_buffer)
     
     if pisa_status.err:
-        return HttpResponse('Error al generar PDF')
+        pdf_buffer.close()
+        return HttpResponse('Error al generar el PDF internamente', status=500)
+    
+    # Extraemos los bytes resultantes y cerramos el buffer de manera segura
+    pdf_buffer.seek(0)
+    pdf_data = pdf_buffer.getvalue()
+    pdf_buffer.close()
+    
+    # Construimos la respuesta HTTP pasando los datos binarios ya masticados
+    response = HttpResponse(pdf_data, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="carnet_{perfil.cedula}.pdf"'
     return response
