@@ -367,7 +367,7 @@ def previsualizar_carnet(request, user_id):
 
     if foto_carnet_doc and foto_carnet_doc.archivo:
         url_archivo = foto_carnet_doc.archivo.url.lower()
-        if any(url_archivo.endswith(ext) for ext in ['.jpg', 'j.peg', '.png', '.webp']):
+        if any(ext in url_archivo for ext in ['.jpg', '.jpeg', '.png', '.webp']):
             es_imagen = True
             foto_carnet_url = foto_carnet_doc.archivo.url
         else:
@@ -413,7 +413,7 @@ def descargar_pdf_carnet(request, perfil_id):
         url_archivo = foto_obj.archivo.url
         url_archivo_lower = url_archivo.lower()
         
-        if any(url_archivo_lower.endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.webp']):
+        if any(ext in url_archivo_lower for ext in ['.jpg', '.jpeg', '.png', '.webp']):
             try:
                 if not url_archivo.startswith('http'):
                     if hasattr(settings, 'CLOUDINARY_STORAGE') or not settings.DEBUG:
