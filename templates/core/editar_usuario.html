@@ -23,8 +23,9 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     
-                    <div class="md:col-span-2 flex items-center gap-6 p-6 bg-slate-900/50 rounded-2xl border border-slate-700/50">
-                        <div class="relative group">
+                    <!-- CORRECCIÓN RESPONSIVA: Cambiado a flex-col y en sm:flex-row -->
+                    <div class="md:col-span-2 flex flex-col sm:flex-row items-center sm:items-center gap-6 p-6 bg-slate-900/50 rounded-2xl border border-slate-700/50">
+                        <div class="relative group shrink-0">
                             {% if perfil.foto_perfil %}
                                 <img src="{{ perfil.foto_perfil|url_nube }}" class="h-24 w-24 rounded-2xl object-cover border-2 border-blue-500 shadow-lg shadow-blue-500/20">
                             {% else %}
@@ -33,10 +34,11 @@
                                 </div>
                             {% endif %}
                         </div>
-                        <div class="flex-1">
-                            <label class="block text-sm font-bold text-slate-300 mb-2">Foto de Perfil</label>
+                        <div class="flex-1 w-full min-w-0">
+                            <label class="block text-sm font-bold text-slate-300 mb-2 text-center sm:text-left">Foto de Perfil</label>
+                            <!-- Se añade 'truncate' para manejar textos de archivo excesivamente largos en pantallas pequeñas -->
                             <input type="file" name="foto_perfil" accept="image/*" 
-                                   class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition-all cursor-pointer">
+                                   class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition-all cursor-pointer truncate">
                         </div>
                     </div>
 
@@ -100,7 +102,7 @@
                     </div>
                 </div>
 
-                <!-- SECCIÓN DE DOCUMENTOS ACTUALES  -->
+                <!-- SECCIÓN DE DOCUMENTOS ACTUALES -->
                 <div class="pt-6 border-t border-slate-700">
                     <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Gestión de Documentos Registrados</h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -114,10 +116,8 @@
                                 <a href="{{ doc.archivo|url_nube }}" target="_blank" class="p-2 text-slate-500 hover:text-blue-400 transition-colors">
                                     <i class="fas fa-eye text-xs"></i>
                                 </a>
-                                <!-- Checkbox oculto con ícono de basura para marcar eliminación -->
                                  <label class="p-2 text-slate-500 hover:text-red-500 cursor-pointer group-relative">
                                      <input type="checkbox" name="eliminar_doc" value="{{ doc.id }}" class="hidden peer">
-                                     <!-- El icono cambiará de color y se mantendrá rojo si está checkeado -->
                                      <i class="fas fa-trash peer-checked:text-red-600 peer-checked:scale-125 transition-all text-xs"></i>
                                  </label>
                             </div>
@@ -173,7 +173,6 @@
         </div>
     </div>
 </div>
-
 
 <script src="{% static 'js/camera_utils.js' %}?v=1.1"></script>
 {% endblock %}
