@@ -360,22 +360,32 @@ def previsualizar_carnet(request, user_id):
         return redirect('home')
     
     perfil = get_object_or_404(Perfil, id=user_id)
-    foto_carnet_doc = perfil.documentos.filter(tipo_documento='FOTO_CARNET').first()
-
     es_imagen = False
     foto_carnet_url = None
 
-    if foto_carnet_doc and foto_carnet_doc.archivo:
-        url_archivo = foto_carnet_doc.archivo.url.lower()
-        if any(ext in url_archivo for ext in ['.jpg', '.jpeg', '.png', '.webp']):
-            es_imagen = True
-            foto_carnet_url = foto_carnet_doc.archivo.url
-        else:
-            foto_carnet_url = foto_carnet_doc.archivo.url
+    try:
+        # 1. Comprobamos de manera segura si existe la relación y el archivo
+        if hasattr(perfil, 'documentos'):
+            foto_carnet_doc = perfil.documentos.filter(tipo_documento='FOTO_CARNET').first()
+            
+            if foto_carnet_doc and foto_carnet_doc.archivo and hasattr(foto_carnet_doc.archivo, 'url'):
+                url_archivo = foto_carnet_doc.archivo.url.lower()
+                
+                # 2. Validación flexible de la extensión
+                if any(ext in url_archivo for ext in ['.jpg', '.jpeg', '.png', '.webp']):
+                    es_imagen = True
+                
+                foto_carnet_url = foto_carnet_doc.archivo.url
+    except Exception as e:
+        # Esto imprimirá el error real en la consola de Render para que sepas exactamente qué falló
+        logger.error(f"Error crítico en previsualizar_carnet para el usuario {user_id}: {str(e)}")
+        # Opcional: puedes dejar que pase vacía la foto para que cargue la interfaz sin tumbar la app
+    
     return render(request, 'core/vista_previa_carnet.html', {
-        'perfil':perfil,
+        'perfil': perfil,
         'foto_carnet_url': foto_carnet_url,
-        'es_imagen': es_imagen,})
+        'es_imagen': es_imagen,
+    })
 
 @login_required
 def enviar_carnet_usuario(request, user_id):
