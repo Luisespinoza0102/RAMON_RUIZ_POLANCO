@@ -408,31 +408,38 @@ def descargar_pdf_carnet(request, perfil_id):
     perfil = get_object_or_404(Perfil, id=perfil_id)
     foto_obj = perfil.documentos.filter(tipo_documento='FOTO_CARNET').first()
 
+    # 1. Cargar Logo local en Base64 de forma segura
     logo_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo_rrp_sin_fondo.png')
     logo_64 = ""
     if os.path.exists(logo_path):
         with open(logo_path, "rb") as f:
             logo_64 = base64.b64encode(f.read()).decode('utf-8')
     
-    foto_64 = ""
+    # 2. Obtener y descargar la imagen desde Cloudinary de forma correcta
+    foto_64 = None  # Cambiamos a None para validar estrictamente su existencia real
     if foto_obj and foto_obj.archivo:
-        url_archivo = foto_obj.archivo.url
+        # Al usar tu guardar_archivo_sistema, foto_obj.archivo puede ser un string (URL) directo
+        url_archivo = foto_obj.archivo.url if hasattr(foto_obj.archivo, 'url') else str(foto_obj.archivo)
         url_archivo_lower = url_archivo.lower()
         
         if any(ext in url_archivo_lower for ext in ['.jpg', '.jpeg', '.png', '.webp']):
             try:
-                if not url_archivo.startswith('http'):
-                    if hasattr(settings, 'CLOUDINARY_STORAGE') or not settings.DEBUG:
-                        url_archivo = cloudinary.uploader.build_url(foto_obj.archivo.name, secure=True)
-                    else:
-                        url_archivo = request.build_absolute_uri(url_archivo)
+                # Forzar HTTPS si viene con protocolo inseguro
+                if url_archivo.startswith('http://'):
+                    url_archivo = url_archivo.replace('http://', 'https://')
+                elif not url_archivo.startswith('http'):
+                    url_archivo = request.build_absolute_uri(url_archivo)
                 
-                headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-                response_url = requests.get(url_archivo, timeout=10)
+                # CORRECCIÓN DE HEADERS: Pasamos correctamente los parámetros al GET
+                headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+                response_url = requests.get(url_archivo, headers=headers, timeout=15)
+                
                 if response_url.status_code == 200:
                     foto_64 = base64.b64encode(response_url.content).decode('utf-8')
+                else:
+                    print(f"Cloudinary retornó código de error: {response_url.status_code}")
             except Exception as e:
-                print(f"Error al descargar imagen: {e}")
+                print(f"Error crítico al descargar imagen de Cloudinary: {e}")
 
     context = {
         'perfil': perfil,
@@ -450,12 +457,9 @@ def descargar_pdf_carnet(request, perfil_id):
         pdf_buffer.close()
         return HttpResponse('Error al generar el PDF internamente', status=500)
     
-    # Extraemos los bytes resultantes y cerramos el buffer de manera segura
-    pdf_buffer.seek(0)
     pdf_data = pdf_buffer.getvalue()
     pdf_buffer.close()
     
-    # Construimos la respuesta HTTP pasando los datos binarios ya masticados
     response = HttpResponse(pdf_data, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="carnet_{perfil.cedula}.pdf"'
     return response

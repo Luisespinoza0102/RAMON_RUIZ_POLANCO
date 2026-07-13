@@ -29,7 +29,7 @@
                             Biblioteca Pública<br>"Ramón Ruiz Polanco"
                         </td>
                         <td rowspan="3" width="85" style="text-align: center; border: 1px solid #000; vertical-align: middle;">
-                            {% if foto_64 %}
+                            {% if foto_64 and foto_64 != "" %}
                                 <img src="data:image/png;base64,{{ foto_64 }}" width="75" height="90">
                             {% else %}
                                 <div style="width: 75px; height: 90px; border: 1px dashed #999; margin: 0 auto;"></div>
