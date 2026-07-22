@@ -409,7 +409,7 @@ def descargar_pdf_carnet(request, perfil_id):
     foto_obj = perfil.documentos.filter(tipo_documento='FOTO_CARNET').first()
 
     # 1. Cargar Logo local en Base64 de forma segura
-    logo_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo2.png')
+    logo_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo_carnet.png')
     logo_64 = ""
     if os.path.exists(logo_path):
         with open(logo_path, "rb") as f:

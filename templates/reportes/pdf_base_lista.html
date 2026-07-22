@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="utf-8">
     <title>{{ titulo }}</title>
@@ -7,12 +7,12 @@
         /* Configuración de Página */
         @page {
             size: letter;
-            margin: 2.5cm 1.5cm 2.5cm 1.5cm;
+            margin: 1.5cm 1.5cm 2.5cm 1.5cm;
             
             /* Footer Estacionario */
             @frame footer_frame {
                 -pdf-frame-content: footerContent;
-                bottom: 1cm;
+                bottom: 0.5cm;
                 margin-left: 1.5cm;
                 margin-right: 1.5cm;
                 height: 1cm;
@@ -22,120 +22,169 @@
         /* Tipografía y General */
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
-            color: #2d3748;
+            color: #333333;
+            font-size: 10pt;
             line-height: 1.4;
         }
 
-        /* Encabezado Estilo Institucional */
+        /* --- ENCABEZADO OFICIAL (MEMBRETE) --- */
         .header-table {
             width: 100%;
-            border-bottom: 3px solid #1e3a8a;
-            margin-bottom: 20px;
+            border-bottom: 2px solid #003366;
             padding-bottom: 10px;
+            margin-bottom: 15px;
         }
-        .brand-name {
-            font-size: 18pt;
+        .header-text {
+            text-align: center;
+            font-size: 9pt;
             font-weight: bold;
-            color: #1e3a8a;
-            text-transform: uppercase;
+            color: #000000;
+            line-height: 1.2;
         }
-        .report-type {
-            text-align: right;
-            font-size: 10pt;
-            color: #718096;
-            vertical-align: bottom;
+        .institution-name {
+            font-size: 11pt;
+            color: #003366;
+            margin-top: 3px;
         }
 
-        /* Títulos Dinámicos */
-        .main-title {
-            font-size: 22pt;
-            margin-top: 10px;
-            margin-bottom: 5px;
+        /* --- METADATOS Y TÍTULOS DEL REPORTE --- */
+        .meta-table {
+            width: 100%;
+            margin-bottom: 20px;
         }
-        .azul { color: #1e3a8a; }
+        .main-title {
+            font-size: 16pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0;
+        }
+        .azul { color: #003366; }
         .rojo { color: #c53030; }
 
-        .info-bar {
-            background-color: #f7fafc;
-            padding: 10px;
-            border-radius: 5px;
-            border-left: 5px solid #cbd5e0;
-            margin-bottom: 25px;
-            font-size: 10pt;
+        .meta-info {
+            text-align: right;
+            font-size: 8.5pt;
+            color: #555555;
+            line-height: 1.4;
         }
 
-        /* Tabla de Datos Moderna */
+        .info-bar {
+            background-color: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border-left: 4px solid #cbd5e1;
+            margin-bottom: 20px;
+            font-size: 9pt;
+            color: #475569;
+        }
+
+        /* --- TABLA DE DATOS --- */
         table.data-table {
             width: 100%;
             border-collapse: collapse;
-            border-radius: 8px;
-            overflow: hidden; /* Simular bordes redondeados */
         }
         table.data-table th {
-            background-color: #1e3a8a;
-            color: white;
-            padding: 12px 8px;
+            background-color: #003366;
+            color: #ffffff;
+            padding: 8px 6px;
             text-align: left;
-            font-size: 10pt;
+            font-size: 8.5pt;
             text-transform: uppercase;
+            border: 1px solid #003366;
         }
-        /* Cambiar color si es retraso */
+        /* Color dinámico de encabezado si es retraso */
         table.data-table th.retraso-header {
             background-color: #c53030;
+            border-color: #c53030;
         }
 
         table.data-table td {
-            padding: 10px 8px;
-            border-bottom: 1px solid #edf2f7;
-            font-size: 9.5pt;
+            padding: 8px 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 8.5pt;
+            vertical-align: middle;
         }
-        table.data-table tr:nth-child(even) {
-            background-color: #f8fafc;
+        table.data-table tr:nth-child(even) td {
+            background-color: #f1f5f9;
         }
 
-        /* Detalles de los campos */
-        .user-name { font-weight: bold; color: #2d3748; }
-        .book-title { font-weight: bold; color: #1a202c; display: block; }
+        /* Detalles internos */
+        .user-name { font-weight: bold; color: #1e293b; }
+        .book-title { font-weight: bold; color: #0f172a; display: block; }
         .book-code { 
             font-family: 'Courier', monospace; 
-            color: #4a5568; 
-            font-size: 8.5pt; 
-            background-color: #ebf4ff; 
+            color: #475569; 
+            font-size: 8pt; 
+            background-color: #e2e8f0; 
             padding: 1px 4px;
+            border-radius: 2px;
         }
         .status-badge {
             font-weight: bold;
             color: #c53030;
         }
 
-        /* Footer */
+        /* --- FOOTER --- */
         .footer {
             text-align: center;
-            font-size: 8pt;
-            color: #a0aec0;
-            border-top: 1px solid #e2e8f0;
+            font-size: 7.5pt;
+            color: #64748b;
+            border-top: 1px solid #cbd5e1;
             padding-top: 5px;
         }
     </style>
 </head>
 <body>
 
+    <!-- MEMBRETE INSTITUCIONAL UNIFICADO -->
     <table class="header-table">
         <tr>
-            <td class="brand-name">BIBLIOTECA PÚBLICA RAMÓN RUÍZ POLANCO</td>
-            <td class="report-type">Sistema de Gestión de Catálogo</td>
+            <td width="15%" align="left" valign="middle">
+                {% if logo_izq_64 %}
+                    <img src="{{ logo_izq_64 }}" height="55">
+                {% else %}
+                    <div style="height: 55px; width: 55px;"></div>
+                {% endif %}
+            </td>
+            
+            <td width="70%" class="header-text" valign="middle">
+                REPÚBLICA BOLIVARIANA DE VENEZUELA<br>
+                GOBERNACIÓN DEL ESTADO FALCÓN<br>
+                COORDINACIÓN DE RED DE BIBLIOTECAS PÚBLICAS<br>
+                <div class="institution-name">BIBLIOTECA PÚBLICA "RAMÓN RUIZ POLANCO"</div>
+            </td>
+
+            <td width="15%" align="right" valign="middle">
+                {% if logo_der_64 %}
+                    <img src="{{ logo_der_64 }}" height="55">
+                {% else %}
+                    <div style="height: 55px; width: 55px;"></div>
+                {% endif %}
+            </td>
         </tr>
     </table>
 
-    <h1 class="main-title {% if es_retraso %}rojo{% else %}azul{% endif %}">
-        {{ titulo }}
-    </h1>
+    <!-- BLOQUE DE TÍTULO Y METADATOS -->
+    <table class="meta-table">
+        <tr>
+            <td width="60%" valign="bottom">
+                <h1 class="main-title {% if es_retraso %}rojo{% else %}azul{% endif %}">
+                    {{ titulo }}
+                </h1>
+            </td>
+            <td width="40%" class="meta-info" valign="bottom">
+                <strong>Generado por:</strong> {{ admin_nombre|default:"Sistema"|upper }}<br>
+                <strong>Fecha:</strong> {{ fecha|date:"d/m/Y" }} &nbsp;|&nbsp; <strong>Hora:</strong> {{ fecha|date:"h:i A" }}
+            </td>
+        </tr>
+    </table>
 
+    <!-- BARRITA DE INFORMACIÓN SECUNDARIA -->
     <div class="info-bar">
-        <strong>Referencia:</strong> {{ subtitulo|default:"General" }} | 
-        <strong>Fecha de Emisión:</strong> {{ fecha|date:"d/m/Y H:i" }}
+        <strong>Referencia / Alcance:</strong> {{ subtitulo|default:"General" }}
     </div>
 
+    <!-- TABLA DE DATOS DE PRÉSTAMOS -->
     <table class="data-table">
         <thead>
             <tr>
@@ -160,12 +209,17 @@
                     {{ p.fecha_devolucion_esperada|date:"d/m/Y" }}
                 </td>
             </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" align="center">No hay registros de préstamos disponibles.</td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
 
+    <!-- FOOTER DE PÁGINA -->
     <div id="footerContent" class="footer">
-        Reporte generado automáticamente por RRP © 2026 - 
+        Documento generado automáticamente por el Sistema de Gestión Bibliotecaria "RRP" - 
         Página <pdf:pagenumber> de <pdf:pagecount>
     </div>
 

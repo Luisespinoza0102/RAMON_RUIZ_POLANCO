@@ -77,7 +77,7 @@ def pdf_inventario_estante(request):
         'fecha': timezone.now(),
         'admin_nombre': request.user.get_full_name() or request.user.username,
         'logo_izq_64': '/static/img/logo1.png',
-        'logo_der_64': '/static/img/logo2.png',
+        'logo_der_64': '/static/img/logo_carnet.png',
     }
     return generar_y_registrar_reporte(
         'reportes/pdf_base_estante.html', 
@@ -129,6 +129,8 @@ def pdf_prestamos_mensual(request):
         'titulo': f'Reporte Mensual de Préstamos: {mes}',
         'prestamos': prestamos,
         'fecha': timezone.now(),
+        'logo_izq_64': '/static/img/logo1.png',
+        'logo_der_64': '/static/img/logo_carnet.png',
         'admin_nombre': request.user.get_full_name() or request.user.username,
     }
     return generar_y_registrar_reporte(
@@ -188,6 +190,8 @@ def pdf_prestamos_retrasados(request):
         'prestamos': prestamos,
         'es_retraso': True, 
         'fecha': timezone.now(),
+        'logo_izq_64': '/static/img/logo1.png',
+        'logo_der_64': '/static/img/logo_carnet.png',
         'admin_nombre': request.user.get_full_name() or request.user.username,
     }
     return generar_y_registrar_reporte(
